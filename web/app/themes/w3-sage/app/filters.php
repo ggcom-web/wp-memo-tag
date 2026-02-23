@@ -303,41 +303,105 @@ function get_random_tags($request) {
 // Posted by Dmitry
 // Retrieved 2026-02-21, License - CC BY-SA 4.0
 
-    add_filter( 'wpcf7_before_send_mail', 'App\wpcf7_before_send_mail_start_function' );
-    function wpcf7_before_send_mail_start_function($cf7){
-        $mail=$cf7->prop('mail');
-        if($mail){
-            $contact_form = $cf7->get_current();
-            $contact_form_id = $contact_form -> id;
-            if ($contact_form_id == 412){
-                if ( !is_admin()){ 
-                $product_name = "";
-                wc()->frontend_includes();
-                WC()->session = new WC_Session_Handler();
-                WC()->session->init();
-                WC()->customer = new WC_Customer( get_current_user_id(), true );
-                WC()->cart = new WC_Cart();
-                  // Debug log to display the contents of the cart
-            error_log('WC Cart Contents: ' . print_r(WC()->cart->get_cart(), true));
+    add_filter( 'wpcf7_mail_components', 'App\append_wc_cart_to_cf7_mail' );
+   function append_wc_cart_to_cf7_mail($components, $contact_form, $instance) {
+                error_log("contact_form: " . print_r($components, true));  
 
-                foreach ( WC()->cart->get_cart() as $cart_item_key => $cart_item ) {
-                    $_product   = apply_filters( 'woocommerce_cart_item_product', $cart_item['data'], $cart_item, $cart_item_key );
-                    $product_id = apply_filters( 'woocommerce_cart_item_product_id', $cart_item['product_id'], $cart_item, $cart_item_key );
-                    if ( $_product && $_product->exists() && $cart_item['quantity'] > 0 && apply_filters( 'woocommerce_widget_cart_item_visible', true, $cart_item, $cart_item_key ) ) {
-                        $product_name = $product_name.apply_filters( 'woocommerce_cart_item_name', $_product->get_name(), $cart_item, $cart_item_key )."\n";
-                    }
-                    }
-                    $my = $product_name;
-                }else{
-                    $my = "";
-                } 
-
-             $mail['body'].="\n\r".$my; // Add the contents of the cart to the end of the email body.
-             
-             
-             WC()->cart->empty_cart();
-             WC()->session->set('cart', array());
-            }
-         $cf7->set_properties(array('mail'=>$mail));
-        } 
+    if (is_admin()) {
+        return $components;
     }
+
+    if ((int) $contact_form->id() !== 2384) {
+        return $components;
+    }
+
+    if (!function_exists('WC')) {
+        return $components;
+    }
+
+    // Ensure cart is properly loaded
+    if (function_exists('wc_load_cart')) {
+        wc_load_cart();
+    }
+
+    if (!WC()->cart) {
+        return $components;
+    }
+
+    $lines = [];
+
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        $product = $cart_item['data'] ?? null;
+        $qty     = (int) ($cart_item['quantity'] ?? 0);
+
+        if (!$product || !$product->exists() || $qty <= 0) {
+            continue;
+        }
+
+        $lines[] = sprintf('%s × %d', $product->get_name(), $qty);
+    }
+
+    if (!empty($lines)) {
+        $components['body'] .= "\n\n--- Cart items ---\n";
+        $components['body'] .= implode("\n", $lines);
+    }
+    return $components;
+}
+
+/**
+ * Optional: Empty cart only after mail is successfully sent
+ */
+add_action('wpcf7_mail_sent', 'empty_wc_cart_after_cf7_mail');
+
+function empty_wc_cart_after_cf7_mail($contact_form) {
+
+    if ((int) $contact_form->id() !== 2384) {
+        return;
+    }
+
+    if (function_exists('WC') && WC()->cart) {
+        WC()->cart->empty_cart();
+    }
+}
+// ... existing code ...
+
+/**
+ * Display cart items on current page
+ */
+add_shortcode('display_cart_items', 'App\display_cart_items_shortcode');
+
+function display_cart_items_shortcode() {
+    if (!function_exists('WC') || !WC()->cart) {
+        return '';
+    }
+
+    $lines = [];
+
+    foreach (WC()->cart->get_cart() as $cart_item) {
+        $product = $cart_item['data'] ?? null;
+        $qty     = (int) ($cart_item['quantity'] ?? 0);
+
+        if (!$product || !$product->exists() || $qty <= 0) {
+            continue;
+        }
+
+        $lines[] = sprintf('%s × %d', $product->get_name(), $qty);
+    }
+
+    if (empty($lines)) {
+        return '<p>Your cart is empty.</p>';
+    }
+
+    $output = '<div class="cart-items">';
+    $output .= '<h3>Cart Items</h3>';
+    $output .= '<ul>';
+    foreach ($lines as $line) {
+        $output .= '<li>' . esc_html($line) . '</li>';
+    }
+    $output .= '</ul>';
+    $output .= '</div>';
+
+    return $output;
+}
+
+// ... rest of code ...
