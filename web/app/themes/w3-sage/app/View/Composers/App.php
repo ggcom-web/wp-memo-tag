@@ -18,7 +18,16 @@ class App extends Composer
         $url = get_the_author_meta('user_url', $author_id);
 
         $raw_phone = get_the_author_meta('billing_phone', get_post_field('post_author'));
-        $avatar = get_avatar($author_id, $size = '60', $default = '', $alt = '', $args = array( 'class' => 'h-10 w-10 rounded-full' ) );
+        $avatar = get_avatar(
+            $author_id, 
+            60, 
+            '', 
+            'Avatar de ' . get_the_author(), 
+            array( 
+                'class'      => 'h-10 w-10 rounded-full',
+                'extra_attr' => 'itemprop="image"' 
+            ) 
+        );        
         return [
             'site_name'     => $this->siteName(),
             'author_url'    => $url ?: '',
