@@ -31,12 +31,12 @@
             @endif
 
             @if($is_significantly_modified && $showBadge)
-                <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] uppercase tracking-wider font-bold rounded-full border border-green-200" title="{{ __('Cet article a été mis à jour récemment', 'sage') }}">
-                    {{ __('Mis à jour', 'sage') }}
+                <span class="px-3 py-1 bg-green-100 text-green-700 text-[10px] uppercase tracking-wider font-bold rounded-full border border-green-200" title="{{ __('This post has been recently updated', 'sage') }}">
+                    {{ __('Updated', 'sage') }}
                 </span>
             @endif
             
-            <span class="ml-auto text-sm text-primary-500">@readingtime {{__('read')}}</span>
+            <span class="ml-auto text-sm text-primary-500">{{ __('Reading time:', 'sage') }} {{ \App\reading_time() }}</span>
         </div>
         <header>
             <h2 class="text-xl font-bold mb-3">
