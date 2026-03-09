@@ -92,6 +92,21 @@ document.addEventListener('DOMContentLoaded', () => {
   /** 
    * Bouton copier le texte dans les bloc code de gutenberg
    *  */
+  function highlightDollarSigns(block) {
+    const lines = block.textContent.split('\n');
+    let highlightedText = '';
+
+    lines.forEach(line => {
+      if (line.trim().startsWith('$ ')) {
+        const highlightedLine = line.replace(/^\$/, '<span class="text-yellow-500">$</span>');
+        highlightedText += highlightedLine + '\n';
+      } else {
+        highlightedText += line + '\n';
+      }
+    });
+
+    block.innerHTML = highlightedText.trim();
+  }
 
   // 1. On cible tous tes blocs de code
   const codeBlocks = document.querySelectorAll('pre.editor');
@@ -103,6 +118,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkMark = '<span class="mr-2"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg></span>';
     button.innerHTML = btnIcon + ' Copier';
     button.className = 'copy-code-button'; // Pour le styliser en CSS
+    highlightDollarSigns(block);
 
     // On s'assure que le parent est en position relative pour placer le bouton
     block.style.position = 'relative';
@@ -110,15 +126,24 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // 3. Logique de copie au clic
     button.addEventListener('click', () => {
-      const code = block.innerText.replace('Copier', '').trim();
-      
-      navigator.clipboard.writeText(code).then(() => {
-        // Petit feedback visuel
+      // On récupère le texte, on retire le mot "Copier" (venant du bouton lui-même)
+      const lines = block.innerText.replace('Copier', '').trim().split('\n');
+
+      const cleanCode = lines.map(line => {
+        // Si la ligne commence par "$ ", on retire uniquement ces 2 caractères
+        if (line.trim().startsWith('$ ')) {
+          return line.trim().substring(2); 
+        }
+        return line;
+      }).join('\n');
+
+      navigator.clipboard.writeText(cleanCode).then(() => {
+        // Feedback visuel
         button.innerHTML = checkMark + 'Copié !';
         button.classList.add('copied');
 
         setTimeout(() => {
-          button.innerHTML = btnIcon + 'Copier';
+          button.innerHTML = btnIcon + ' Copier';
           button.classList.remove('copied');
         }, 2000);
       }).catch(err => {
