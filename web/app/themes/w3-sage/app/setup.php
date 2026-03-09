@@ -226,14 +226,7 @@ add_action('after_setup_theme', function () {
 });
 
 add_theme_support('custom-logo');
-/**
- * Register custom Blade directives safely using the Acorn bootloader.
- */
-add_action('acorn/init', function () {
-    \Roots\app('blade.compiler')->directive('readingtime', function () {
-        return '<?php echo \App\reading_time(); ?>';
-    });
-});
+
 //ajoutez ce filtre pour transformer la balise <link> de votre CSS principal en chargement asynchrone (non bloquant)
 add_filter('style_loader_tag', function ($tag, $handle, $href) {
     // On cible le handle 'sage/app' ou 'sage/main' (vérifiez le nom dans votre setup.php)
