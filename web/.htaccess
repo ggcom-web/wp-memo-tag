@@ -93,6 +93,24 @@ RewriteRule . /index.php [L]
 </IfModule>
 
 # END WordPress
+
+#Interdire le listage des repertoires
+Options All -Indexes
+
+#Interdire l'accès au fichier wp-config.php
+ <Files wp-config.php>
+  	order allow,deny
+ 	deny from all
+ </Files>
+
+#Intedire l'accès au fichier htaccess lui même
+<Files .htaccess>
+	order allow,deny
+	deny from all
+</Files>
+
+RedirectMatch 404 /\.git
+
 # ----------------------------------------------------------------------
 # RENFORCEMENT DE LA SÉCURITÉ (AJOUTS CONSEILLÉS)
 # ----------------------------------------------------------------------
