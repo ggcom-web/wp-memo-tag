@@ -6,6 +6,20 @@ import 'fslightbox';
 import i18next from 'i18next';
 import LanguageDetector from 'i18next-browser-languagedetector';
 import translations from './translations';
+// Importer le cœur de highlight.js
+import hljs from 'highlight.js/lib/core';
+import javascript from 'highlight.js/lib/languages/javascript';
+import php from 'highlight.js/lib/languages/php';
+
+// Enregistrer uniquement les langages nécessaires
+hljs.registerLanguage('javascript', javascript);
+hljs.registerLanguage('php', php);
+
+// Puis initialiser
+hljs.highlightAll();
+// Importer le style CSS de votre choix (ex: github, monokai, atom-one-dark)
+// Les styles se trouvent dans le dossier 'styles' du package npm
+import 'highlight.js/styles/github-dark.css';
 
 i18next
   .use(LanguageDetector)
@@ -89,70 +103,64 @@ document.addEventListener('DOMContentLoaded', () => {
           toggleSearch('close');
       }
   });
-  /** 
-   * Bouton copier le texte dans les bloc code de gutenberg
-   *  */
-  function highlightDollarSigns(block) {
-    const lines = block.textContent.split('\n');
-    let highlightedText = '';
+  /*fin du content loaded*/
+});
 
-    lines.forEach(line => {
-      if (line.trim().startsWith('$ ')) {
-        const highlightedLine = line.replace(/^\$/, '<span class="text-yellow-500">$</span>');
-        highlightedText += highlightedLine + '\n';
-      } else {
-        highlightedText += line + '\n';
-      }
-    });
+function setupCodeBlocks() {
+const codeBlocks = document.querySelectorAll('pre.editor');
 
-    block.innerHTML = highlightedText.trim();
-  }
+codeBlocks.forEach((block) => {
+  // 1. Coloration des symboles $ (on le fait AVANT highlight.js)
+  const rawContent = block.textContent;
+  const lines = rawContent.split('\n');
+  const processedHTML = lines.map(line => {
+    if (line.trim().startsWith('$ ')) {
+      return line.replace(/^\$ /, '<span class="text-yellow-500">$ </span>');
+    }
+    return line;
+  }).join('\n');
+  
+  block.innerHTML = processedHTML;
 
-  // 1. On cible tous tes blocs de code
-  const codeBlocks = document.querySelectorAll('pre.editor');
+  // 2. Application de Highlight.js
+  hljs.highlightElement(block);
 
-  codeBlocks.forEach((block) => {
-    // 2. On crée le bouton
-    const button = document.createElement('button');
-    const btnIcon = '<span class="mr-2"><svg aria-hidden="true" class="svg-icon iconCopy mr4" width="17" height="18" viewBox="0 0 17 18"><path d="M5 6c0-1.09.91-2 2-2h4.5L15 7.5V15c0 1.09-.91 2-2 2H7c-1.09 0-2-.91-2-2zm6-1.25V8h3.25z"></path><path d="M10 1a2 2 0 0 1 2 2H6a2 2 0 0 0-2 2v9a2 2 0 0 1-2-2V4a3 3 0 0 1 3-3z" opacity=".4"></path></svg></span>';
-    const checkMark = '<span class="mr-2"><svg xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg></span>';
-    button.innerHTML = btnIcon + ' Copier';
-    button.className = 'copy-code-button'; // Pour le styliser en CSS
-    highlightDollarSigns(block);
+  // 3. Création du bouton (On l'ajoute dans un conteneur parent)
+  const wrapper = document.createElement('div');
+  wrapper.className = 'code-block-wrapper';
+  wrapper.style.position = 'relative';
+  
+  // On entoure le block par le wrapper
+  block.parentNode.insertBefore(wrapper, block);
+  wrapper.appendChild(block);
 
-    // On s'assure que le parent est en position relative pour placer le bouton
-    block.style.position = 'relative';
-    block.appendChild(button);
+  const button = document.createElement('button');
+  const btnIcon = '<span class="mr-2"><svg aria-hidden="true" class="svg-icon iconCopy mr4 text-white h-5 w-5 fill-current" width="17" height="18" viewBox="0 0 17 18"><path d="M5 6c0-1.09.91-2 2-2h4.5L15 7.5V15c0 1.09-.91 2-2 2H7c-1.09 0-2-.91-2-2zm6-1.25V8h3.25z"></path><path d="M10 1a2 2 0 0 1 2 2H6a2 2 0 0 0-2 2v9a2 2 0 0 1-2-2V4a3 3 0 0 1 3-3z" opacity=".4"></path></svg></span>';
+  const checkMark = '<span class="mr-2"><svg class="text-green-500 h-5 w-5 fill-current" xmlns="http://www.w3.org/2000/svg" width="17" height="17" viewBox="0 0 24 24"><path d="M20.285 2l-11.285 11.567-5.286-5.011-3.714 3.716 9 8.728 15-15.285z"/></svg></span>';
+   
+  
+  button.innerHTML = btnIcon + ' Copier';
+  button.className = 'copy-code-button';
+  wrapper.appendChild(button);
 
-    // 3. Logique de copie au clic
-    button.addEventListener('click', () => {
-      // On récupère le texte, on retire le mot "Copier" (venant du bouton lui-même)
-      const lines = block.innerText.replace('Copier', '').trim().split('\n');
+  // 4. Logique de copie propre
+  button.addEventListener('click', () => {
+    // On utilise textContent du bloc original (plus fiable que innerText)
+    // On nettoie les lignes pour retirer le "$ " au début
+    const cleanCode = rawContent.split('\n').map(line => {
+      return line.trim().startsWith('$ ') ? line.trim().substring(2) : line;
+    }).join('\n');
 
-      const cleanCode = lines.map(line => {
-        // Si la ligne commence par "$ ", on retire uniquement ces 2 caractères
-        if (line.trim().startsWith('$ ')) {
-          return line.trim().substring(2); 
-        }
-        return line;
-      }).join('\n');
-
-      navigator.clipboard.writeText(cleanCode).then(() => {
-        // Feedback visuel
-        button.innerHTML = checkMark + 'Copié !';
-        button.classList.add('copied');
-
-        setTimeout(() => {
-          button.innerHTML = btnIcon + ' Copier';
-          button.classList.remove('copied');
-        }, 2000);
-      }).catch(err => {
-        console.error('Erreur lors de la copie : ', err);
-      });
+    navigator.clipboard.writeText(cleanCode).then(() => {
+      button.innerHTML = checkMark + ' Copié !';
+      setTimeout(() => {
+        button.innerHTML = btnIcon + ' Copier';
+      }, 2000);
     });
   });
 });
-
+}
+document.addEventListener('DOMContentLoaded', setupCodeBlocks);
 /**
  * Back to Top Button
  */
