@@ -7,7 +7,8 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-
+    env:
+          FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -27,6 +28,13 @@ jobs:
             "https://${{ secrets.CPANEL_SERVER }}:2083/execute/SshWhitelist/add?address=$IP&port=$PORT&direction=in" | jq
 
       # 2️⃣ BUILD DES ASSETS SUR GITHUB (Inclus Critical CSS)
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: '${{ secrets.THEME_DIR }}/package-lock.json'
+
       - name: Install Puppeteer dependencies
         run: |
           sudo apt-get update
