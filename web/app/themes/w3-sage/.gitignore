@@ -4,3 +4,15 @@
 !/public/.gitkeep
 .env
 npm-debug.log
+# Litespeed Cache
+web/app/litespeed/
+
+# Thèmes par défaut (si tu ne les touches pas)
+web/app/themes/twentytwentyfive/
+
+# Fichiers temporaires ou logs
+web/app/themes/w3-sage/tmp/
+web/app/themes/w3-sage/app.js
+
+# Yoast LLMS
+web/llms.txt
