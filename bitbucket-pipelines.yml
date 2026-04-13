@@ -24,7 +24,7 @@ pipelines:
             - cd $THEME_DIR
             - npm install
             - npm run build
-            - cd ../../.. # Retour à la racine (ajuste selon la profondeur de ton THEME_DIR)
+            - cd $BITBUCKET_CLONE_DIR # Retour à la racine 
 
             # 5️⃣ Transfert du dossier Build via SCP
             # Note : On utilise -O pour forcer le protocole SCP classique si nécessaire
