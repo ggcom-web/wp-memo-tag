@@ -16,30 +16,31 @@ pipelines:
             - |
               curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
               "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IPV4&port=$SFTP_PORT&direction=in"
-            # PAUSE DE SÉCURITÉ
-            - sleep 20 
-            - echo "Pause terminée, tentative de connexion..."
-            # 3️⃣ Installation des dépendances pour Puppeteer (Critical CSS)
+            
+            # Pause pour laisser le temps au pare-feu de s'ouvrir
+            - sleep 15
+
+            # 3️⃣ Installation des dépendances système (Puppeteer/Critical CSS)
             - apt-get update && apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 libxss1 libasound2 libxtst6 libxshmfence1 libgbm1 jq
 
-            # 4️⃣ Build des assets (Node.js)
+            # 4️⃣ Build des assets
             - cd $THEME_DIR
             - npm install
             - npm run build
-            - cd $BITBUCKET_CLONE_DIR # Retour à la racine 
+            - cd $BITBUCKET_CLONE_DIR
 
-            # 5️⃣ Transfert du dossier Build via SCP
-            # Note : On utilise -O pour forcer le protocole SCP classique si nécessaire
+            # 5️⃣ Transfert du dossier Build
             - LOCAL_BUILD_PATH="$THEME_DIR/public/build"
             - REMOTE_THEME_PATH="$SFTP_TARGET_DIR/$THEME_DIR"
-            - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g') # Nettoyage des slashs
+            - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
             
             - echo "Transfert vers $REMOTE_THEME_PATH/public/"
-              scp -P $SFTP_PORT -o StrictHostKeyChecking=no -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
-            # 6️⃣ Commandes SSH finales sur le serveur
-            - ssh -p $SFTP_PORT $SFTP_USER@$SFTP_HOST "
+            # Ajout de -o StrictHostKeyChecking=no pour éviter l'erreur d'empreinte
+            - scp -P $SFTP_PORT -o StrictHostKeyChecking=no -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
+
+            # 6️⃣ Commandes SSH finales (Git Pull, Composer, Cache)
+            - ssh -p $SFTP_PORT -o StrictHostKeyChecking=no $SFTP_USER@$SFTP_HOST "
                 set -e
-                -o StrictHostKeyChecking=no
                 cd $SFTP_TARGET_DIR
                 git fetch origin
                 git reset --hard origin/main
@@ -49,7 +50,7 @@ pipelines:
                 fi
               "
           after-script:
-            # 7️⃣ Nettoyage : On referme le pare-feu quoi qu'il arrive
+            # 7️⃣ Nettoyage : On referme le pare-feu
             - export IPV4=$(curl -s https://api.ipify.org)
             - |
               curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
