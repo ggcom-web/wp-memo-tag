@@ -1,3 +1,26 @@
+# TEMP MAINTENANCE PAGE
+<IfModule mod_rewrite.c>
+# 	RewriteEngine On
+
+	# GGCOM
+	RewriteCond %{REMOTE_ADDR} !^88.178.23.237
+
+	# server ip
+	RewriteCond %{REMOTE_ADDR} !^109.234.160.22
+
+	# w3c validation
+	# RewriteCond %{REMOTE_ADDR} !^128.30.52.
+
+	# maintenance page and assets
+	RewriteCond %{REQUEST_URI} !/maintenance [NC]
+	RewriteCond %{REQUEST_URI} !\.(jpe?g?|png|gif) [NC]
+
+	# serve default 503 response
+	RewriteRule .* https://memo-tag.fr [R=302,L]
+
+	# alternate response without custom page
+	# RewriteRule .* - [R=503,L]
+</IfModule>
 # ==================================================
 # PERFORMANCES PAGE SPEED INSIGHTS
 # ==================================================
@@ -33,49 +56,7 @@ RewriteRule (^|/)\.(git|env|user\.ini|htaccess|htpasswd|composer\.(json|lock)|wp
 RewriteRule ^(readme\.html|license\.txt) - [F,L]
 </IfModule>
 
-# ==================================================
-# REDIRECTIONS OPTIMISÉES – blog.gaelgerard.com
-# ==================================================
-<IfModule mod_rewrite.c>
 
-# === Redirections globales par pattern ===
-# Toutes les URLs /creation-digitale/ vers /wordpress-cms/ (sauf exceptions ci-dessous)
-RewriteRule ^creation-digitale/(plateforme-de-formation-en-ligne-simple-pour-createurs-et-artisans|creation-de-plateforme-de-cours-en-ligne-wordpress-retour-dexperience-et-choix-techniques|developpement-plugins-wordpress-creez-votre-plugin-sur-mesure|logiciel-de-gestion-de-la-formation-training-management-system-sous-wordpress|welcome-to-the-gutenberg-editor|nouveau-formulaire-contact-form-7|site-multilingue-administrable-wordpress)$ /wordpress-cms/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/ vers /seo-geo-visibilite/ (pattern spécifique)
-RewriteRule ^creation-digitale/(qu-est-ce-que-la-technique-query-fan-out|schema-org-et-geo-rendre-vos-contenus-visibles-pour-les-moteurs-de-recherche-ia|tracker-les-vues-de-videos-youtube-sur-mon-site-internet|ameliorer-referencement-naturel)/?$ /seo-geo-visibilite/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/ vers /securite-conformite-rgpd/
-RewriteRule ^creation-digitale/(cnil-vie-privee-et-protection-contre-les-cookies|solution-rgpd-cle-en-main-sans-abonnement|5-facons-dont-les-applications-de-messagerie-epient-vos-conversations|mise-en-conformite-rgpd|gdpr-manager-plugin-pour-wordpress|comment-securiser-un-site)/?$ /securite-conformite-rgpd/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/ vers /gestion-de-projet-methodes/
-RewriteRule ^creation-digitale/(site-internet-artisan-pme|pourquoi-j-utilise-les-services-d-o2switch-depuis-mes-debuts-en-freelance|voici-comment-prosperer-en-2021|secrets-succes-freelancer|booster-son-business|creer-un-site-internet-gratuit|creer-un-site-internet-en-local|coup-de-frais-site-internet)$ /gestion-de-projet-methodes/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/ vers /inclassable/
-RewriteRule ^creation-digitale/(en-2021-nous-vous-souhaitons|comment-vider-son-cache|avec-vous-depuis-7-ans|2020-une-excellente-annee|maintenance-site-internet|site-internet-eco-responsable|une-excellente-annee|2-minutes-pour-convaincre|site-vitrine-administrable-wordpress|site-administrable-emajine|presentation-interactive|landing-page-responsive-qr-code|site-associatif-wordpress|site-catalogue-de-realisations-emajine|portfolio-decoration-wordpress|site-vitrine-statique)/?$ /inclassable/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/ vers /e-commerce-woocommerce/
-RewriteRule ^creation-digitale/(comment-jai-transforme-un-site-woocommerce-en-plateforme-de-reservation-devenements-legere-et-sur-mesure|boutique-wordpress-woocommerce|migration-prestashop-1-4-vers-1-6|ecommercesolidaire)/?$ /e-commerce-woocommerce/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/integration-web/ vers /wordpress-cms/ (exceptions)
-RewriteRule ^creation-digitale/integration-web/(extranet-adherents-wordpress|site-de-couponing-wordpress|site-communautaire-extranet-wordpress)$ /wordpress-cms/$1 [R=301,L]
-
-# Toutes les URLs /creation-digitale/integration-web/ vers /inclassable/ (exceptions)
-RewriteRule ^creation-digitale/integration-web/(site-vitrine-administrable-wordpress|site-administrable-emajine|presentation-interactive|landing-page-responsive-qr-code|site-associatif-wordpress|site-catalogue-de-realisations-emajine|portfolio-decoration-wordpress|site-vitrine-statique)$ /inclassable/$1 [R=301,L]
-
-# === Redirections individuelles restantes ===
-RewriteRule ^trucs-et-astuces/error-listen-eaddrinuse-3000-resolu/?$ /developpement-web/error-listen-eaddrinuse-3000-resolu/ [R=301,L]
-RewriteRule ^trucs-et-astuces/signature-email/?$ /marketing-digital/signature-email/ [R=301,L]
-RewriteRule ^trucs-et-astuces/cv-gael-gerard-developpeur-senior-wordpress-full-stack/?$ /expertises/ [R=301,L]
-RewriteRule ^contact/?$ /accompagnement/ [R=301,L]
-RewriteRule ^wp-content/uploads/2025/08/CV-Gael-GERARD-Developpeur-Senior-WordPress-Full-Stack\.pdf$ /expertises/ [R=301,L]
-
-# === Redirections tags ===
-RewriteRule ^tag/email-responsive/?$ /tag/responsive/ [R=301,L]
-RewriteRule ^tag/campagnes-mailing/?$ /tag/email/ [R=301,L]
-RewriteRule ^tag/migration-prestashop/?$ /tag/prestashop/ [R=301,L]
-
-</IfModule>
 
 # ==================================================
 # BEGIN WordPress
