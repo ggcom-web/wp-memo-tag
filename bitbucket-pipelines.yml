@@ -35,11 +35,11 @@ pipelines:
             - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g') # Nettoyage des slashs
             
             - echo "Transfert vers $REMOTE_THEME_PATH/public/"
-            - scp -P $SFTP_PORT -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
-
+              scp -P $SFTP_PORT -o StrictHostKeyChecking=no -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
             # 6️⃣ Commandes SSH finales sur le serveur
             - ssh -p $SFTP_PORT $SFTP_USER@$SFTP_HOST "
                 set -e
+                -o StrictHostKeyChecking=no
                 cd $SFTP_TARGET_DIR
                 git fetch origin
                 git reset --hard origin/main
