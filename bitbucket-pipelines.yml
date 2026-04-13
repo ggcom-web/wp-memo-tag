@@ -16,7 +16,9 @@ pipelines:
             - |
               curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
               "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IPV4&port=$SFTP_PORT&direction=in"
-
+            # PAUSE DE SÉCURITÉ
+            - sleep 20 
+            - echo "Pause terminée, tentative de connexion..."
             # 3️⃣ Installation des dépendances pour Puppeteer (Critical CSS)
             - apt-get update && apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 libxss1 libasound2 libxtst6 libxshmfence1 libgbm1 jq
 
