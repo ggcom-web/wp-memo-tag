@@ -136,15 +136,15 @@ http://w3.gg/wp/wp-admin
 
 cd web/app/themes
 
-composer create-project roots/sage w3-sage
+composer create-project roots/sage memo-sage
 
-cd w3-sage
+cd memo-sage
 
 npm install
 
 npm run build
 
-wp theme activate w3-sage
+wp theme activate memo-sage
 
 ```
 ## 📦 Déploiement / CI/CD
