@@ -18,16 +18,19 @@ pipelines:
             - export IPV4_B=$(curl -s https://ifconfig.me || echo "failed")
             - export IPV4_C=$(curl -s https://checkip.amazonaws.com || echo "failed")
             - echo "IPs détectées - A:$IPV4_A | B:$IPV4_B | C:$IPV4_C"
+            - echo "Check Variables - Host_Len:${#SFTP_HOST} | Port_Len:${#SFTP_PORT} | User_Len:${#SFTP_USER}"
             - |
               for IP in $(echo "$IPV4_A $IPV4_B $IPV4_C" | tr ' ' '\n' | grep -v "failed" | sort -u); do
                 echo "Ouverture pare-feu pour IP $IP"
-                WHITELIST_RES=$(curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
-                "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IP&port=$SFTP_PORT&direction=in")
-                echo "Réponse Whitelist pour $IP : $WHITELIST_RES"
+                # Méthode 1: SshWhitelist
+                curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IP&port=$SFTP_PORT&direction=in"
+                # Méthode 2: IPWhitelist (Global)
+                curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/IPWhitelist/add?ip=$IP"
               done
-            - sleep 30
-            - echo "Vérification de l'accès au port $SFTP_PORT sur $SFTP_HOST..."
-            - "nc -zv -w 10 $SFTP_HOST $SFTP_PORT || echo 'ATTENTION : Le port $SFTP_PORT semble toujours fermé après whitelist.'"
+            - sleep 60
+            - echo "Vérification de l'accès aux ports sur $SFTP_HOST..."
+            - "nc -zv -w 5 $SFTP_HOST 2083 || echo 'Port 2083 (cPanel) inaccessible'"
+            - "nc -zv -w 10 $SFTP_HOST $SFTP_PORT || echo 'ATTENTION : Le port SFTP $SFTP_PORT est fermé'"
             - LOCAL_BUILD_PATH="$THEME_DIR/public/build"
             - REMOTE_THEME_PATH="$SFTP_TARGET_DIR/$THEME_DIR"
             - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
