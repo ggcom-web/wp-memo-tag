@@ -25,7 +25,6 @@ pipelines:
                 curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IP&port=$SFTP_PORT&direction=in"
                 curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/IPWhitelist/add?ip=$IP"
               done
-            - sleep 60
             # 3️⃣ TRANSFERT
             - LOCAL_BUILD_PATH="$THEME_DIR/public/build"
             - REMOTE_THEME_PATH="$SFTP_TARGET_DIR/$THEME_DIR"
