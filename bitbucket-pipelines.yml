@@ -1,4 +1,4 @@
-image: node:24
+image:node:24
 
 pipelines:
   branches:
@@ -8,36 +8,31 @@ pipelines:
           caches:
             - node
           script:
-            # 1️⃣ Installation des dépendances (On commence par ça pour ne pas gaspiller le temps de Whitelist)
+            # 1️⃣ Installation des dépendances
             - apt-get update && apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 libxss1 libasound2 libxtst6 libxshmfence1 libgbm1 jq netcat-openbsd
             - cd $THEME_DIR
             - npm install
             - npm run build
             - cd $BITBUCKET_CLONE_DIR
+            # 2️⃣ WHITELISTING
             - export IPV4_A=$(curl -s https://api.ipify.org || echo "failed")
             - export IPV4_B=$(curl -s https://ifconfig.me || echo "failed")
             - export IPV4_C=$(curl -s https://checkip.amazonaws.com || echo "failed")
             - echo "IPs détectées - A:$IPV4_A | B:$IPV4_B | C:$IPV4_C"
-            - echo "Check Variables - Host_Len:${#SFTP_HOST} | Port_Len:${#SFTP_PORT} | User_Len:${#SFTP_USER}"
             - |
               for IP in $(echo "$IPV4_A $IPV4_B $IPV4_C" | tr ' ' '\n' | grep -v "failed" | sort -u); do
                 echo "Ouverture pare-feu pour IP $IP"
-                # Méthode 1: SshWhitelist
                 curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IP&port=$SFTP_PORT&direction=in"
-                # Méthode 2: IPWhitelist (Global)
                 curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/IPWhitelist/add?ip=$IP"
               done
             - sleep 60
-            - echo "Vérification de l'accès aux ports sur $SFTP_HOST..."
-            - "nc -zv -w 5 $SFTP_HOST 2083 || echo 'Port 2083 (cPanel) inaccessible'"
-            - "nc -zv -w 10 $SFTP_HOST $SFTP_PORT || echo 'ATTENTION : Le port SFTP $SFTP_PORT est fermé'"
+            # 3️⃣ TRANSFERT
             - LOCAL_BUILD_PATH="$THEME_DIR/public/build"
             - REMOTE_THEME_PATH="$SFTP_TARGET_DIR/$THEME_DIR"
             - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
             - echo "Tentative de transfert vers $REMOTE_THEME_PATH/public/"
             - scp -4 -P $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=120 -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
-
-            # 5️⃣ Commandes SSH finales
+            # 4️⃣ COMMANDES FINALES
             - |
               ssh -4 -p $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=120 $SFTP_USER@$SFTP_HOST "
                 set -e
@@ -50,8 +45,13 @@ pipelines:
                 fi
               "
           after-script:
-            # 7️⃣ Nettoyage : On referme le pare-feu
-            - export IPV4=$(curl -s https://api.ipify.org)
+            # 5️⃣ NETTOYAGE
+            - export IPV4_A=$(curl -s https://api.ipify.org || echo "failed")
+            - export IPV4_B=$(curl -s https://ifconfig.me || echo "failed")
+            - export IPV4_C=$(curl -s https://checkip.amazonaws.com || echo "failed")
             - |
-              curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
-              "https://$CPANEL_SERVER:2083/execute/SshWhitelist/remove?address=$IPV4&port=$SFTP_PORT&direction=in"
+              for IP in $(echo "$IPV4_A $IPV4_B $IPV4_C" | tr ' ' '\n' | grep -v "failed" | sort -u); do
+                echo "Fermeture pare-feu pour IP $IP"
+                curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/SshWhitelist/remove?address=$IP&port=$SFTP_PORT&direction=in"
+                curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/IPWhitelist/remove?ip=$IP"
+              done
