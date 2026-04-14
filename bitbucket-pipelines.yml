@@ -52,6 +52,10 @@ pipelines:
             - |
               for IP in $(echo "$IPV4_A $IPV4_B $IPV4_C" | tr ' ' '\n' | grep -v "failed" | sort -u); do
                 echo "Fermeture pare-feu pour IP $IP"
+                # Suppression ENTRANTE
                 curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/SshWhitelist/remove?address=$IP&port=$SFTP_PORT&direction=in"
+                # Suppression SORTANTE
+                curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/SshWhitelist/remove?address=$IP&port=$SFTP_PORT&direction=out"
+                # Suppression Globale (IPWhitelist)
                 curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" "https://$CPANEL_SERVER:2083/execute/IPWhitelist/remove?ip=$IP"
               done
