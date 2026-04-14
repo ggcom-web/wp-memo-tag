@@ -8,38 +8,36 @@ pipelines:
           caches:
             - node
           script:
-            # 1️⃣ Récupération de l'IP du Runner Bitbucket
-            - export IPV4=$(curl -s https://api.ipify.org)
-            - echo "IP du runner Bitbucket -> $IPV4"
-
-            # 2️⃣ Ouverture du pare-feu o2switch (Whitelist)
-            - |
-              curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
-              "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IPV4&port=$SFTP_PORT&direction=in"
-            
-            # Pause pour laisser le temps au pare-feu de s'ouvrir
-            - sleep 15
-
-            # 3️⃣ Installation des dépendances système (Puppeteer/Critical CSS)
+            # 1️⃣ Installation des dépendances (On commence par ça pour ne pas gaspiller le temps de Whitelist)
             - apt-get update && apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 libxss1 libasound2 libxtst6 libxshmfence1 libgbm1 jq
-
-            # 4️⃣ Build des assets
+            
+            # 2️⃣ Build des assets
             - cd $THEME_DIR
             - npm install
             - npm run build
             - cd $BITBUCKET_CLONE_DIR
 
-            # 5️⃣ Transfert du dossier Build
+            # 3️⃣ WHITELIST (Juste avant de se connecter pour être sûr)
+            - export IPV4=$(curl -s https://api.ipify.org)
+            - echo "Ouverture pare-feu pour IP $IPV4"
+            - |
+              curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
+              "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IPV4&port=$SFTP_PORT&direction=in"
+            
+            # On laisse 20 secondes au système o2switch pour propager l'autorisation
+            - sleep 20
+
+            # 4️⃣ Transfert du dossier Build
             - LOCAL_BUILD_PATH="$THEME_DIR/public/build"
             - REMOTE_THEME_PATH="$SFTP_TARGET_DIR/$THEME_DIR"
             - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
             
-            - echo "Transfert vers $REMOTE_THEME_PATH/public/"
-            # Bitbucket utilisera automatiquement la clé configurée dans "SSH Keys"
-            - scp -P $SFTP_PORT -o StrictHostKeyChecking=no -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
-            # 6️⃣ Commandes SSH finales (Syntaxe corrigée)
+            - echo "Tentative de transfert vers $REMOTE_THEME_PATH/public/"
+            - scp -P $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=60 -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
+
+            # 5️⃣ Commandes SSH finales
             - |
-              ssh -p $SFTP_PORT -o StrictHostKeyChecking=no $SFTP_USER@$SFTP_HOST "
+              ssh -p $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=60 $SFTP_USER@$SFTP_HOST "
                 set -e
                 cd $SFTP_TARGET_DIR
                 git fetch origin
