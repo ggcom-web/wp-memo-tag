@@ -21,11 +21,12 @@ pipelines:
             - export IPV4=$(curl -s https://api.ipify.org)
             - echo "Ouverture pare-feu pour IP $IPV4"
             - |
-              curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
-              "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IPV4&port=$SFTP_PORT&direction=in"
+              WHITELIST_RES=$(curl -sm 45 -H "Authorization: cpanel $CPANEL_LOGIN:$CPANEL_TOKEN" \
+              "https://$CPANEL_SERVER:2083/execute/SshWhitelist/add?address=$IPV4&port=$SFTP_PORT&direction=in")
+              echo "Réponse Whitelist SSH: $WHITELIST_RES"
             
-            # On laisse 20 secondes au système o2switch pour propager l'autorisation
-            - sleep 20
+            # On laisse 30 secondes au système o2switch pour propager l'autorisation
+            - sleep 30
 
             # 4️⃣ Transfert du dossier Build
             - LOCAL_BUILD_PATH="$THEME_DIR/public/build"
@@ -33,11 +34,11 @@ pipelines:
             - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
             
             - echo "Tentative de transfert vers $REMOTE_THEME_PATH/public/"
-            - scp -P $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=60 -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
+            - scp -4 -P $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=120 -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
 
             # 5️⃣ Commandes SSH finales
             - |
-              ssh -p $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=60 $SFTP_USER@$SFTP_HOST "
+              ssh -4 -p $SFTP_PORT -o StrictHostKeyChecking=no -o ConnectTimeout=120 $SFTP_USER@$SFTP_HOST "
                 set -e
                 cd $SFTP_TARGET_DIR
                 git fetch origin
