@@ -194,5 +194,31 @@ w3atelier/
 ├── composer.json
 └── README.md
 ```
+1. Variables de Connexion (Serveur)
 
+Ces variables permettent au script de savoir où envoyer les fichiers.
+
+    SFTP_HOST : L'adresse de ton serveur (ex: sftp.mon-serveur.com).
+
+    SFTP_PORT : Le port SSH (généralement 22 ou un port spécifique chez o2switch).
+
+    SFTP_USER : Ton nom d'utilisateur SSH/cPanel.
+
+2. Variables d'API (Whitelist o2switch)
+
+Indispensables pour que le runner Bitbucket puisse franchir le pare-feu.
+
+    CPANEL_SERVER : L'hôte de ton interface cPanel (ex: nodexx.o2switch.net).
+
+    CPANEL_LOGIN : Ton identifiant de connexion cPanel.
+
+    CPANEL_TOKEN : Le jeton d'API (API Token) que tu as généré dans ton interface o2switch.
+
+3. Variables de Chemins (Projet)
+
+Celles-ci évitent de modifier le code si tu changes de structure de dossier.
+
+    THEME_DIR : Le chemin relatif de ton thème dans le repo (ex: web/app/themes/mon-theme).
+
+    SFTP_TARGET_DIR : Le chemin absolu sur le serveur où se trouve la racine du projet (ex: /home/user/public_html).
 ---
