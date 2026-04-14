@@ -37,14 +37,15 @@ pipelines:
             - echo "Transfert vers $REMOTE_THEME_PATH/public/"
             # Bitbucket utilisera automatiquement la clé configurée dans "SSH Keys"
             - scp -P $SFTP_PORT -o StrictHostKeyChecking=no -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
-            # 6️⃣ Commandes SSH finales (Git Pull, Composer, Cache)
-            - ssh -p $SFTP_PORT -o StrictHostKeyChecking=no $SFTP_USER@$SFTP_HOST "
+            # 6️⃣ Commandes SSH finales (Syntaxe corrigée)
+            - |
+              ssh -p $SFTP_PORT -o StrictHostKeyChecking=no $SFTP_USER@$SFTP_HOST "
                 set -e
                 cd $SFTP_TARGET_DIR
                 git fetch origin
                 git reset --hard origin/main
                 composer install --no-dev --optimize-autoloader
-                if command -v wp &> /dev/null; then
+                if command -v wp > /dev/null 2>&1; then
                   wp acorn optimize:clear
                 fi
               "
