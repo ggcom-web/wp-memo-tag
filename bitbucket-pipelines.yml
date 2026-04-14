@@ -35,9 +35,8 @@ pipelines:
             - REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
             
             - echo "Transfert vers $REMOTE_THEME_PATH/public/"
-            # Ajout de -o StrictHostKeyChecking=no pour éviter l'erreur d'empreinte
+            # Bitbucket utilisera automatiquement la clé configurée dans "SSH Keys"
             - scp -P $SFTP_PORT -o StrictHostKeyChecking=no -r $LOCAL_BUILD_PATH $SFTP_USER@$SFTP_HOST:$REMOTE_THEME_PATH/public/
-
             # 6️⃣ Commandes SSH finales (Git Pull, Composer, Cache)
             - ssh -p $SFTP_PORT -o StrictHostKeyChecking=no $SFTP_USER@$SFTP_HOST "
                 set -e
