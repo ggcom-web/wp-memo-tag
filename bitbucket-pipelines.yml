@@ -49,7 +49,7 @@ pipelines:
                 if command -v wp > /dev/null 2>&1; then
                   wp acorn optimize:clear
                 fi
-                # 3. LE TEST (Smoke Test)
+                # 3. LE TEST
                 # On récupère le code HTTP de la page d'accueil
                 HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
 
@@ -60,7 +60,7 @@ pipelines:
                   # Restauration de la DB
                   wp db import backup-before-update.sql
                   
-                  # Optionnel : Revenir à la version précédente de Composer (si tu as gardé le .lock précédent)
+                  # Optionnel : Revenir à la version précédente de Composer
                   # git checkout composer.lock
                   # composer install
                   
