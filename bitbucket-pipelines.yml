@@ -38,10 +38,39 @@ pipelines:
                 cd $SFTP_TARGET_DIR
                 git fetch origin
                 git reset --hard origin/main
-                composer install --no-dev --optimize-autoloader
+
+                # 1. Préparation : Sauvegarde rapide de la DB
+                wp db export backup-before-update.sql
+
+                # 2. Mise à jour des fichiers et activation
+                composer install --no-dev
+                wp language plugin install --all fr_FR
+                wp plugin activate --all
                 if command -v wp > /dev/null 2>&1; then
                   wp acorn optimize:clear
                 fi
+                # 3. LE TEST (Smoke Test)
+                # On récupère le code HTTP de la page d'accueil
+                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
+
+                if [ "$HTTP_CODE" -ne 200 ]; then
+                  echo "ERREUR : Le site répond avec un code $HTTP_CODE. Lancement du Rollback..."
+                  
+                  # 4. ROLLBACK
+                  # Restauration de la DB
+                  wp db import backup-before-update.sql
+                  
+                  # Optionnel : Revenir à la version précédente de Composer (si tu as gardé le .lock précédent)
+                  # git checkout composer.lock
+                  # composer install
+                  
+                  echo "Rollback terminé. Le site est revenu à son état précédent."
+                  exit 1 # Fait échouer le pipeline Bitbucket pour t'alerter
+                else
+                  echo "Succès : Le site est en ligne (Code 200)."
+                  rm backup-before-update.sql
+                fi
+
               "
           after-script:
             # 5️⃣ NETTOYAGE
