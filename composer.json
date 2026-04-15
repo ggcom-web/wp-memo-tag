@@ -33,11 +33,16 @@
     {
       "type": "vcs",
       "url": "https://github.com/gaelgerard/mu-plugins"
+    },
+    {
+      "type": "path",
+      "url": "memo-plugins/memo-connect"
     }
   ],
   "require": {
     "php": ">=8.0",
     "composer/installers": "^2.0",
+    "gaelgerard/memo-connect": "*",
     "gaelgerard/mu-plugins": "dev-master",
     "vlucas/phpdotenv": "^5.5",
     "oscarotero/env": "^2.1",

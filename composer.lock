@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "afcebf9184b6be914215b213aad107f1",
+    "content-hash": "e882c1ecce3b677f850655a4c58f8e9d",
     "packages": [
         {
             "name": "composer/installers",
@@ -151,6 +151,22 @@
                 }
             ],
             "time": "2024-06-24T20:46:46+00:00"
+        },
+        {
+            "name": "gaelgerard/memo-connect",
+            "version": "dev-main",
+            "dist": {
+                "type": "path",
+                "url": "memo-plugins/memo-connect",
+                "reference": "dc40b6423aa2431ee2cd6a98783296dcc8a6be29"
+            },
+            "require": {
+                "composer/installers": "^2.0"
+            },
+            "type": "wordpress-plugin",
+            "transport-options": {
+                "relative": true
+            }
         },
         {
             "name": "gaelgerard/mu-plugins",
