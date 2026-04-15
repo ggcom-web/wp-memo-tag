@@ -29,18 +29,48 @@
       "type": "composer",
       "url": "https://wpackagist.org",
       "only": ["wpackagist-plugin/*", "wpackagist-theme/*"]
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/gaelgerard/mu-plugins"
     }
   ],
   "require": {
-    "php": ">=8.1",
-    "composer/installers": "^2.2",
+    "php": ">=8.0",
+    "composer/installers": "^2.0",
+    "gaelgerard/mu-plugins": "dev-master",
     "vlucas/phpdotenv": "^5.5",
     "oscarotero/env": "^2.1",
     "roots/bedrock-autoloader": "^1.0",
     "roots/bedrock-disallow-indexing": "^2.0",
     "roots/wordpress": "6.9",
     "roots/wp-config": "1.0.0",
-    "wpackagist-theme/twentytwentyfive": "^1.0"
+    "wpackagist-theme/twentytwentyfive": "^1.0",
+    "wpackagist-plugin/akismet": "*",
+    "wpackagist-plugin/code-snippets": "*",
+    "wpackagist-plugin/contact-form-7": "*",
+    "wpackagist-plugin/cf7-submissions": "*",
+    "wpackagist-plugin/disable-comments": "*",
+    "wpackagist-plugin/duplicate-menu": "*",
+    "wpackagist-plugin/duplicate-page": "*",
+    "wpackagist-plugin/duracelltomi-google-tag-manager": "*",
+    "wpackagist-plugin/email-address-encoder": "*",
+    "wpackagist-plugin/favicon-by-realfavicongenerator": "*",
+    "wpackagist-plugin/french-slugs": "*",
+    "wpackagist-plugin/health-check": "*",
+    "wpackagist-plugin/heartbeat-control": "*",
+    "wpackagist-plugin/litespeed-cache": "*",
+    "wpackagist-plugin/post-type-switcher": "*",
+    "wpackagist-plugin/redirection": "*",
+    "wpackagist-plugin/search-exclude": "*",
+    "wpackagist-plugin/sucuri-scanner": "*",
+    "wpackagist-plugin/updraftplus": "*",
+    "wpackagist-plugin/user-role-editor": "*",
+    "wpackagist-plugin/woocommerce": "*",
+    "wpackagist-plugin/wordpress-importer": "*",
+    "wpackagist-plugin/wordpress-seo": "*",
+    "wpackagist-plugin/wp-crontrol": "*",
+    "wpackagist-plugin/wp-mail-logging": "*"
   },
   "require-dev": {
     "laravel/pint": "^1.18"
