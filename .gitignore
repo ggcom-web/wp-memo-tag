@@ -10,7 +10,10 @@ web/app/themes/*/public/build/
 web/wp/
 web/app/languages/
 web/app/plugins/
+web/app/mu-plugins/
 
+# Sauf si tu as des plugins spécifiques non-Composer que tu veux garder :
+# !../../plugins/mon-plugin-maison/
 
 # Uploads
 web/app/uploads/
