@@ -49,28 +49,21 @@ pipelines:
                 if command -v wp > /dev/null 2>&1; then
                   wp acorn optimize:clear
                 fi
-                # 3. LE TEST
-                # On récupère le code HTTP de la page d'accueil
-                HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
+                # 3. TEST DE DISPONIBILITE
+                # On utilise curl. On echappe le $ pour qu'il soit lu sur le serveur distant
+                HTTP_CODE=\$(curl -s -o /dev/null -w '%{http_code}' https://memo-tag.com/)
 
-                if [ "$HTTP_CODE" -ne 200 ]; then
-                  echo "ERREUR : Le site répond avec un code $HTTP_CODE. Lancement du Rollback..."
+                if [ \"\$HTTP_CODE\" -ne 200 ]; then
+                  echo \"ERREUR : Le site repond avec un code \$HTTP_CODE. Lancement du Rollback...\"
                   
                   # 4. ROLLBACK
-                  # Restauration de la DB
                   wp db import backup-before-update.sql
-                  
-                  # Optionnel : Revenir à la version précédente de Composer
-                  # git checkout composer.lock
-                  # composer install
-                  
-                  echo "Rollback terminé. Le site est revenu à son état précédent."
-                  exit 1 # Fait échouer le pipeline Bitbucket pour t'alerter
+                  echo \"Rollback termine. Le site est revenu a son etat precedent.\"
+                  exit 1
                 else
-                  echo "Succès : Le site est en ligne (Code 200)."
+                  echo \"Succes : Le site est en ligne (Code 200).\"
                   rm backup-before-update.sql
                 fi
-
               "
           after-script:
             # 5️⃣ NETTOYAGE
