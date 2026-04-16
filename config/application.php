@@ -178,3 +178,4 @@ Config::define('SUCURI_PLUG_SALT', 'd2894c4079f309ac6f3a264e11a13a2f213d9c35720b
 
 Config::define( 'WP_CACHE', true );
 
+Config::define( 'WP_AUTO_UPDATE_CORE', 'minor' );
