@@ -52,7 +52,14 @@ jobs:
         uses: webfactory/ssh-agent@v0.9.0
         with:
           ssh-private-key: ${{ secrets.SFTP_PRIVATE_KEY }}
-
+      - name: Debug Secret Check
+        run: |
+          if [ -z "${{ secrets.SSH_PRIVATE_KEY }}" ]; then
+            echo "ERREUR : Le secret est vide ou introuvable"
+            exit 1
+          else
+            echo "Le secret est bien détecté."
+          fi
       # 4️⃣ DÉPLOIEMENT : Transfert des fichiers buildés + Git Pull
       - name: Sync and SSH Commands
         run: |
