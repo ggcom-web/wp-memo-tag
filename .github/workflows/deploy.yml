@@ -69,18 +69,42 @@ jobs:
 
           # Commandes finales sur le serveur
           ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -p ${{ secrets.SFTP_PORT }} ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} "
-            set -e
-            cd ${{ secrets.SFTP_TARGET_DIR }}
+          set -e
+          # Utilisation de la variable de chemin définie dans vos secrets
+          cd ${{ secrets.SFTP_TARGET_DIR }}
+
+          # Mise à jour du code
+          git fetch origin
+          git reset --hard origin/main
+
+          # 1. Préparation : Sauvegarde rapide de la DB
+          wp db export backup-before-update.sql
+
+          # 2. Mise à jour des fichiers et activation
+          composer install --no-dev --optimize-autoloader
+          wp language plugin install --all fr_FR
+          wp plugin activate --all
+          
+          if command -v wp > /dev/null 2>&1; then
+            # On vérifie si acorn est présent (souvent le cas sur Sage/Bedrock)
+            wp acorn optimize:clear || echo "Acorn non configuré, skip."
+          fi
+
+          # 3. TEST DE DISPONIBILITE
+          # Note : Pas besoin d'échapper le $ ici car le script est envoyé tel quel au shell distant
+          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
+
+          if [ "$HTTP_CODE" -ne 200 ]; then
+            echo "ERREUR : Le site répond avec un code $HTTP_CODE. Lancement du Rollback..."
             
-            # Mise à jour du code (PHP/Templates)
-            git fetch origin
-            git reset --hard origin/main
-            
-            # Dépendances PHP
-            composer install --no-dev --optimize-autoloader
-            
-            # Nettoyage cache WordPress/Acorn
-            wp acorn optimize:clear
+            # 4. ROLLBACK
+            wp db import backup-before-update.sql
+            echo "Rollback terminé. Le site est revenu à son état précédent."
+            exit 1
+          else
+            echo "Succès : Le site est en ligne (Code 200)."
+            rm backup-before-update.sql
+          fi
           "
 
       # 5️⃣ CLEANUP
