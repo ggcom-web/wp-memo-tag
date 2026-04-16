@@ -170,5 +170,11 @@ if (!defined('ABSPATH')) {
 /**
  * Prevent CF7 from adding paragraphs everywhere
  */
-define( 'WPCF7_AUTOP', false );
+Config::define( 'WPCF7_AUTOP', false );
+
+
+Config::define('SUCURI_PLUG_KEY',  'a4f0e4326d7559db85a85e0558559f1179612d81efcaae0e6ddac73e2504daf3');
+Config::define('SUCURI_PLUG_SALT', 'd2894c4079f309ac6f3a264e11a13a2f213d9c35720b1880f07745a69d404904');
+
+Config::define( 'WP_CACHE', true );
 
