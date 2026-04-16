@@ -1,0 +1,44 @@
+/* WooCommerce Memo Tag – Frontend */
+
+.memo-tag-product-fields {
+    margin: 1em 0;
+    padding: 1em;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.memo-tag-product-fields label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: .4em;
+}
+
+.memo-tag-product-fields textarea {
+    width: 100%;
+    min-height: 100px;
+    resize: vertical;
+}
+
+/* Adresse du détenteur – checkout */
+#memo-tag-holder-address {
+    margin-top: 2em;
+    padding: 1.5em;
+    border: 1px solid #d0d0d0;
+    border-radius: 4px;
+    background: #fff;
+}
+
+#memo-tag-holder-address h3 {
+    margin-top: 0;
+}
+
+.memo-tag-address-notice {
+    color: #555;
+    font-style: italic;
+    margin-bottom: 1em;
+}
+
+#memo-tag-holder-address-fields {
+    margin-top: 1em;
+}

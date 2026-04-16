@@ -1,0 +1,6 @@
+/* WooCommerce Memo Tag – Admin */
+
+#woocommerce-product-data .memo_tag_tab a::before {
+    content: "\f318"; /* dashicon memo */
+    font-family: dashicons;
+}
