@@ -11,7 +11,11 @@ web/wp/
 web/app/languages/
 web/app/plugins/
 web/app/mu-plugins/
+# Ignorer tous les dossiers dans themes
+web/app/themes/*/
 
+# SAUF mon thème à moi (le ! signifie "ne pas ignorer")
+!web/app/themes/memo-sage/
 # Sauf si tu as des plugins spécifiques non-Composer que tu veux garder :
 # !../../plugins/mon-plugin-maison/
 
