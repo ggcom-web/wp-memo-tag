@@ -1,26 +1,4 @@
-# TEMP MAINTENANCE PAGE
-<IfModule mod_rewrite.c>
-# 	RewriteEngine On
 
-	# GGCOM
-	RewriteCond %{REMOTE_ADDR} !^88.178.23.237
-
-	# server ip
-	RewriteCond %{REMOTE_ADDR} !^109.234.160.22
-
-	# w3c validation
-	# RewriteCond %{REMOTE_ADDR} !^128.30.52.
-
-	# maintenance page and assets
-	RewriteCond %{REQUEST_URI} !/maintenance [NC]
-	RewriteCond %{REQUEST_URI} !\.(jpe?g?|png|gif) [NC]
-
-	# serve default 503 response
-	RewriteRule .* https://memo-tag.fr [R=302,L]
-
-	# alternate response without custom page
-	# RewriteRule .* - [R=503,L]
-</IfModule>
 # ==================================================
 # PERFORMANCES PAGE SPEED INSIGHTS
 # ==================================================
