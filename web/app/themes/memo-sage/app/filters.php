@@ -16,19 +16,24 @@ add_filter('excerpt_more', function () {
 });
 /**
  * Redirige tous les visiteurs sans accès Woo Share vers un site externe.
+ * Sauf pour les outils de monitoring/CI (GitHub Actions).
  */
 add_action('template_redirect', function () {
-    // 1. On définit l'URL de destination externe
     $destination_externe = 'https://memo-tag.fr/';
 
-    // 2. On vérifie si la fonction de ton plugin existe
-    // Si elle n'existe pas, on ne fait rien pour éviter une erreur fatale
     if (!function_exists('has_woo_share_access')) {
         return;
     }
 
-    // 3. Si l'utilisateur n'a PAS l'accès, on le redirige
-    if (!has_woo_share_access()) {
+    // 1. Détection des agents de monitoring ou de CI
+    $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
+    
+    // On définit une liste de mots-clés qui ne doivent pas être redirigés
+    // 'GitHub-Hookshot' est souvent utilisé, ou tu peux ajouter 'curl'
+    $is_ci_pipeline = (strpos($user_agent, 'GitHub') !== false || strpos($user_agent, 'curl') !== false);
+
+    // 2. Si l'utilisateur n'a PAS l'accès ET que ce n'est pas le pipeline
+    if (!has_woo_share_access() && WP_ENV !== 'development' && !$is_ci_pipeline) {
         wp_redirect($destination_externe);
         exit;
     }
