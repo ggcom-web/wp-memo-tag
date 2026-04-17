@@ -36,7 +36,7 @@
     },
     {
       "type": "path",
-      "url": "memo-plugins/*"
+      "url": "memo-plugins/memo-connect"
     }
   ],
   "require": {
