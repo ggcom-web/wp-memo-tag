@@ -36,13 +36,14 @@
     },
     {
       "type": "path",
-      "url": "memo-plugins/memo-connect"
+      "url": "memo-plugins/*"
     }
   ],
   "require": {
     "php": ">=8.0",
     "composer/installers": "^2.0",
     "gaelgerard/memo-connect": "*",
+    "gaelgerard/wc-memo-tag": "*",
     "gaelgerard/ggcom-mu-plugins": "dev-master",
     "vlucas/phpdotenv": "^5.5",
     "oscarotero/env": "^2.1",
