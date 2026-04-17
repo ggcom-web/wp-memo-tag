@@ -222,3 +222,8 @@ Celles-ci évitent de modifier le code si tu changes de structure de dossier.
 
     SFTP_TARGET_DIR : Le chemin absolu sur le serveur où se trouve la racine du projet (ex: /home/user/public_html).
 ---
+ssh-keygen -t ed25519 -C "github-actions-deploy" -f ~/.ssh/id_github_deploy
+
+nano ~/.ssh/authorized_keys
+
+ssh -i ~/.ssh/id_github_deploy gaelgerard@citrus.o2switch.net
