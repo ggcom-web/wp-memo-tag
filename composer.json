@@ -42,7 +42,6 @@
   "require": {
     "php": ">=8.0",
     "composer/installers": "^2.0",
-    "gaelgerard/wc-memo-tag": "*",
     "gaelgerard/memo-connect": "*",
     "gaelgerard/ggcom-mu-plugins": "dev-master",
     "vlucas/phpdotenv": "^5.5",
