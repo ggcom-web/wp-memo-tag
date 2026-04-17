@@ -64,48 +64,36 @@ jobs:
 
           echo "Transferring build assets to: $REMOTE_THEME_PATH/public/"
 
-          # Transfert uniquement du dossier build (plus rapide que tout uploader)
-          scp -o StrictHostKeyChecking=no -o ConnectTimeout=60 -P ${{ secrets.SFTP_PORT }} -r $LOCAL_BUILD_PATH ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }}:$REMOTE_THEME_PATH/public/
+          # Commandes finales sur le serveur via SSH avec Heredoc
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -p ${{ secrets.SFTP_PORT }} ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} << 'EOF'
+            set -e
+            cd ${{ secrets.SFTP_TARGET_DIR }}
 
-          # Commandes finales sur le serveur
-          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -p ${{ secrets.SFTP_PORT }} ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} "
-          set -e
-          # Utilisation de la variable de chemin définie dans vos secrets
-          cd ${{ secrets.SFTP_TARGET_DIR }}
+            git fetch origin
+            git reset --hard origin/main
 
-          # Mise à jour du code
-          git fetch origin
-          git reset --hard origin/main
+            wp db export backup-before-update.sql
 
-          # 1. Préparation : Sauvegarde rapide de la DB
-          wp db export backup-before-update.sql
-
-          # 2. Mise à jour des fichiers et activation
-          composer install --no-dev --optimize-autoloader
-          wp language plugin install --all fr_FR
-          wp plugin activate --all
-          
-          if command -v wp > /dev/null 2>&1; then
-            # On vérifie si acorn est présent (souvent le cas sur Sage/Bedrock)
-            wp acorn optimize:clear || echo "Acorn non configuré, skip."
-          fi
-
-          # 3. TEST DE DISPONIBILITE
-          # Note : Pas besoin d'échapper le $ ici car le script est envoyé tel quel au shell distant
-          HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
-
-          if [ "$HTTP_CODE" -ne 200 ]; then
-            echo "ERREUR : Le site répond avec un code $HTTP_CODE. Lancement du Rollback..."
+            composer install --no-dev --optimize-autoloader
+            wp language plugin install --all fr_FR
+            wp plugin activate --all
             
-            # 4. ROLLBACK
-            wp db import backup-before-update.sql
-            echo "Rollback terminé. Le site est revenu à son état précédent."
-            exit 1
-          else
-            echo "Succès : Le site est en ligne (Code 200)."
-            rm backup-before-update.sql
-          fi
-          "
+            if command -v wp > /dev/null 2>&1; then
+              wp acorn optimize:clear || echo "Acorn non configuré, skip."
+            fi
+
+            # Ici, les guillemets ne poseront plus de problème
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
+
+            if [ "$HTTP_CODE" -ne 200 ]; then
+              echo "ERREUR : Le site répond avec un code $HTTP_CODE. Lancement du Rollback..."
+              wp db import backup-before-update.sql
+              exit 1
+            else
+              echo "Succès : Le site est en ligne (Code 200)."
+              rm backup-before-update.sql
+            fi
+          EOF
 
       # 5️⃣ CLEANUP
       - name: Remove runner IP from whitelist
