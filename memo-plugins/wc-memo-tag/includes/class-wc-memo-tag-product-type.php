@@ -96,7 +96,7 @@ class WC_Memo_Tag_Product_Type {
                     'id'          => '_memo_tag_description',
                     'label'       => __( 'Description par défaut (admin)', 'wc-memo-tag' ),
                     'desc_tip'    => true,
-                    'description' => __( 'Texte d'exemple ou instruction visible côté admin. Le client saisira sa propre description lors de la commande.', 'wc-memo-tag' ),
+                    'description' => __( 'Texte d’exemple ou instruction visible côté admin. Le client saisira sa propre description lors de la commande.', 'wc-memo-tag' ),
                     'value'       => get_post_meta( $product_id, '_memo_tag_description', true ),
                 ] );
 
