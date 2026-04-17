@@ -7,4 +7,6 @@
  */
 require_once dirname(__DIR__) . '/vendor/autoload.php';
 require_once dirname(__DIR__) . '/config/application.php';
+define('SUCURI_PLUG_KEY',  'a4f0e4326d7559db85a85e0558559f1179612d81efcaae0e6ddac73e2504daf3');
+define('SUCURI_PLUG_SALT', 'd2894c4079f309ac6f3a264e11a13a2f213d9c35720b1880f07745a69d404904');
 require_once ABSPATH . 'wp-settings.php';

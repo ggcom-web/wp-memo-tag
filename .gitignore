@@ -21,7 +21,8 @@ web/app/themes/*/
 
 # Uploads
 web/app/uploads/
-
+# Lando / Docker
+.lando/
 # Environment secrets
 .env
 
