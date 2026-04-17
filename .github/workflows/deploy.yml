@@ -46,14 +46,7 @@ jobs:
           cd ${{ secrets.THEME_DIR }}
           npm install
           npm run build # Ici, GitHub génère le dossier /public/build avec le Critical CSS
-      - name: Debug Connection
-        uses: appleboy/ssh-action@v1.0.3
-        with:
-          host: ${{ secrets.SFTP_HOST }}
-          username: ${{ secrets.SFTP_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          port: ${{ secrets.SFTP_PORT }}
-          script: echo "Connexion réussie pour $(whoami)"
+
       # 3️⃣ PRÉPARATION SSH
       - name: Setup SSH agent
         uses: webfactory/ssh-agent@v0.9.0
