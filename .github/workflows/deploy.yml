@@ -1,0 +1,112 @@
+name: Deploy via GitHub Build (Critical CSS) & Sync
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # 1️⃣ WHITELIST (Lancée tôt pour laisser le pare-feu s'ouvrir pendant les installs)
+      - name: Get runner public IP
+        id: ip
+        run: |
+          # Utilise l'API de ipify pour obtenir l'IPv4
+          IPV4=$(curl -s https://api.ipify.org)
+          echo "ipv4=$IPV4" >> $GITHUB_OUTPUT
+
+      - name: Whitelist runner IP on o2switch
+        run: |
+          IP="${{ steps.ip.outputs.ipv4 }}"
+          PORT=${{ secrets.SFTP_PORT }}
+          echo "Whitelisting IP: $IP on port $PORT"
+          
+          curl -sm 45 -H "Authorization: cpanel ${{ secrets.CPANEL_LOGIN }}:${{ secrets.CPANEL_TOKEN }}" \
+            "https://${{ secrets.CPANEL_SERVER }}:2083/execute/SshWhitelist/add?address=$IP&port=$PORT&direction=in" | jq
+
+      # 2️⃣ BUILD DES ASSETS SUR GITHUB (Inclus Critical CSS)
+      - name: Setup Node.js 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: 'npm'
+          cache-dependency-path: '${{ secrets.THEME_DIR }}/package-lock.json'
+
+      - name: Install Puppeteer dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libgbm-dev libnss3 libatk-bridge2.0-0 libgtk-3-0 libx11-xcb1 libxcb-dri3-0 libxss1 libasound2t64 libxtst6 libxshmfence1 libgbm1
+
+      - name: Node Build (Local)
+        run: |
+          cd ${{ secrets.THEME_DIR }}
+          npm install
+          npm run build # Ici, GitHub génère le dossier /public/build avec le Critical CSS
+
+      # 3️⃣ PRÉPARATION SSH
+      - name: Setup SSH agent
+        uses: webfactory/ssh-agent@v0.9.0
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+  
+      # 4️⃣ DÉPLOIEMENT : Transfert des fichiers buildés + Git Pull
+      - name: Sync and SSH Commands
+        run: |
+          # Variables de chemins
+          LOCAL_BUILD_PATH="${{ secrets.THEME_DIR }}/public/build"
+          REMOTE_THEME_PATH="${{ secrets.SFTP_TARGET_DIR }}/${{ secrets.THEME_DIR }}"
+          # Nettoyage des slashs
+          REMOTE_THEME_PATH=$(echo $REMOTE_THEME_PATH | sed 's#//#/#g')
+
+          echo "Transferring build assets to: $REMOTE_THEME_PATH/public/"
+
+          # Commandes finales sur le serveur via SSH avec Heredoc
+          ssh -o StrictHostKeyChecking=no -o ConnectTimeout=60 -p ${{ secrets.SFTP_PORT }} ${{ secrets.SFTP_USER }}@${{ secrets.SFTP_HOST }} << 'EOF'
+            set -e
+            cd ${{ secrets.SFTP_TARGET_DIR }}
+
+            git fetch origin
+            git reset --hard origin/main
+
+            wp db export backup-before-update.sql
+
+            composer install --no-dev --optimize-autoloader
+            wp language plugin install --all fr_FR
+            wp plugin activate --all
+            
+            if command -v wp > /dev/null 2>&1; then
+              wp acorn optimize:clear || echo "Acorn non configuré, skip."
+            fi
+
+            # Ici, les guillemets ne poseront plus de problème
+            HTTP_CODE=$(curl -s -o /dev/null -w "%{http_code}" https://memo-tag.com/)
+
+            if [ "$HTTP_CODE" -ne 200 ]; then
+              echo "ERREUR : Le site répond avec un code $HTTP_CODE. Lancement du Rollback..."
+              wp db import backup-before-update.sql
+              exit 1
+            else
+              echo "Succès : Le site est en ligne (Code 200)."
+              rm backup-before-update.sql
+            fi
+          EOF
+
+      # 5️⃣ CLEANUP
+      - name: Remove runner IP from whitelist
+        if: always()
+        run: |
+          IP="${{ steps.ip.outputs.ipv4 }}"
+          PORT=${{ secrets.SFTP_PORT }}
+          echo "Removing GitHub runner IP from whitelist: $IP"
+
+          # IN
+          curl -sm 45 -H "Authorization: cpanel ${{ secrets.CPANEL_LOGIN }}:${{ secrets.CPANEL_TOKEN }}" \
+            "https://${{ secrets.CPANEL_SERVER }}:2083/execute/SshWhitelist/remove?address=$IP&port=$PORT&direction=in" | jq
+
+          # OUT
+          curl -sm 45 -H "Authorization: cpanel ${{ secrets.CPANEL_LOGIN }}:${{ secrets.CPANEL_TOKEN }}" \
+            "https://${{ secrets.CPANEL_SERVER }}:2083/execute/SshWhitelist/remove?address=$IP&port=$PORT&direction=out" | jq
