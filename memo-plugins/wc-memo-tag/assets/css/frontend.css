@@ -1,0 +1,56 @@
+/* WooCommerce Memo Tag – Frontend */
+
+.memo-tag-product-fields {
+    margin: 1em 0;
+    padding: 1em;
+    border: 1px solid #e0e0e0;
+    border-radius: 4px;
+    background: #fafafa;
+}
+
+.memo-tag-product-fields label {
+    font-weight: 600;
+    display: block;
+    margin-bottom: .4em;
+}
+
+.memo-tag-product-fields input[type="text"] {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+/* Adresse du détenteur – checkout */
+/* Masquer le titre par défaut "Expédition" si nécessaire via JS ou CSS */
+.woocommerce-shipping-fields > h3#ship-to-different-address {
+    font-size: 0; /* On va le remplacer en JS */
+}
+
+.woocommerce-shipping-fields > h3#ship-to-different-address label {
+    font-size: 16px;
+    display: inline-block;
+}
+
+/* Style pour la section facturation quand elle est masquée */
+.billing-different-hidden {
+    display: none;
+}
+
+/* Inversion de l'ordre Billing / Shipping au checkout */
+.woocommerce-checkout .customer_details {
+    display: flex;
+    flex-direction: column;
+}
+
+.woocommerce-checkout .col-1 { /* Billing */
+    order: 2;
+    width: 100% !important;
+    max-width: 100% !important;
+}
+
+.woocommerce-checkout .col-2 { /* Shipping */
+    order: 1;
+    width: 100% !important;
+    max-width: 100% !important;
+}

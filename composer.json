@@ -1,0 +1,119 @@
+{
+  "name": "roots/bedrock",
+  "type": "project",
+  "license": "MIT",
+  "description": "WordPress boilerplate with Composer, easier configuration, and an improved folder structure",
+  "homepage": "https://roots.io/bedrock/",
+  "authors": [
+    {
+      "name": "Scott Walkinshaw",
+      "email": "scott.walkinshaw@gmail.com",
+      "homepage": "https://github.com/swalkinshaw"
+    },
+    {
+      "name": "Ben Word",
+      "email": "ben@benword.com",
+      "homepage": "https://github.com/retlehs"
+    }
+  ],
+  "keywords": [
+    "bedrock", "composer", "roots", "wordpress-composer", "wordpress", "wp-composer", "wp-config", "wp"
+  ],
+  "support": {
+    "issues": "https://github.com/roots/bedrock/issues",
+    "forum": "https://discourse.roots.io/category/bedrock"
+  },
+  "repositories": [
+    {
+      "name": "wp-packages",
+      "type": "composer",
+      "url": "https://repo.wp-packages.org",
+      "only": [
+        "wp-plugin/*",
+        "wp-theme/*"
+      ]
+    },
+    {
+      "type": "vcs",
+      "url": "https://github.com/gaelgerard/ggcom-mu-plugins"
+    },
+    {
+      "type": "path",
+      "url": "memo-plugins/*"
+    }
+  ],
+  "require": {
+    "php": ">=8.3",
+    "composer/installers": "^2.2",
+    "gaelgerard/ggcom-mu-plugins": "dev-master",
+    "oscarotero/env": "^2.1",
+    "roots/bedrock-autoloader": "^1.0",
+    "roots/bedrock-disallow-indexing": "^2.0",
+    "roots/wordpress": "6.9.4",
+    "roots/wp-config": "1.0.0",
+    "vlucas/phpdotenv": "^5.5",
+    "wp-theme/twentytwentyfive": "^1.0",
+    "wp-plugin/akismet": "*",
+    "wp-plugin/code-snippets": "*",
+    "wp-plugin/contact-form-7": "*",
+    "wp-plugin/cf7-submissions": "*",
+    "wp-plugin/disable-comments": "*",
+    "wp-plugin/duplicate-menu": "*",
+    "wp-plugin/duplicate-page": "*",
+    "wp-plugin/duracelltomi-google-tag-manager": "*",
+    "wp-plugin/email-address-encoder": "*",
+    "wp-plugin/favicon-by-realfavicongenerator": "*",
+    "wp-plugin/french-slugs": "*",
+    "wp-plugin/health-check": "*",
+    "wp-plugin/heartbeat-control": "*",
+    "wp-plugin/litespeed-cache": "*",
+    "wp-plugin/post-type-switcher": "*",
+    "wp-plugin/redirection": "*",
+    "wp-plugin/search-exclude": "*",
+    "wp-plugin/sucuri-scanner": "*",
+    "wp-plugin/updraftplus": "*",
+    "wp-plugin/user-role-editor": "*",
+    "wp-plugin/wordpress-importer": "*",
+    "wp-plugin/wordpress-seo": "*",
+    "wp-plugin/wp-crontrol": "*",
+    "wp-plugin/wp-mail-logging": "*"
+  },
+  "require-dev": {
+    "laravel/pint": "^1.27",
+    "pestphp/pest": "^4.0",
+    "wp-plugin/woocommerce": "^10.7",
+    "gaelgerard/memo-connect": "*",
+    "gaelgerard/wc-memo-tag": "*"
+  },
+  "config": {
+    "optimize-autoloader": true,
+    "preferred-install": "dist",
+    "allow-plugins": {
+      "composer/installers": true,
+      "roots/wordpress-core-installer": true,
+      "pestphp/pest-plugin": true
+    },
+    "sort-packages": true
+  },
+  "minimum-stability": "dev",
+  "prefer-stable": true,
+  "extra": {
+    "installer-paths": {
+      "web/app/mu-plugins/{$name}/": [
+        "type:wordpress-muplugin"
+      ],
+      "web/app/plugins/{$name}/": [
+        "type:wordpress-plugin"
+      ],
+      "web/app/themes/{$name}/": [
+        "type:wordpress-theme"
+      ]
+    },
+    "wordpress-install-dir": "web/wp"
+  },
+  "scripts": {
+    "lint": "pint --test",
+    "lint:fix": "pint",
+    "test": "pest"
+  }
+}

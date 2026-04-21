@@ -1,0 +1,54 @@
+@import "tailwindcss" theme(static);
+@source "../../app/**/*.php";
+@source "../**/*.blade.php";
+@source "../**/*.js";
+
+@theme {
+  --color-primary: #004769;
+  --color-secondary: #18a9ae;
+  --color-accent: #8ec89a;
+  --color-dark: #1E293B;
+  --color-light: #F8FAFC;
+}
+
+@layer base {
+  button {
+    color: inherit;
+    cursor: pointer;
+  }
+
+  input {
+    color: var(--color-dark);
+    background-color: white;
+  }
+
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+@layer utilities {
+  .gradient-bg {
+    background: linear-gradient(135deg, #004769 0%, #18a9ae 50%, #8ec89a 100%);
+  }
+
+  .gradient-text {
+    background: linear-gradient(135deg, #004769 0%, #18a9ae 50%, #8ec89a 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+
+  .gradient-border {
+    border-image: linear-gradient(135deg, #004769 0%, #18a9ae 50%, #8ec89a 100%) 1;
+  }
+
+  .option-gradient {
+    background: linear-gradient(135deg, rgba(0, 71, 105, 0.05) 0%, rgba(24, 169, 174, 0.05) 50%, rgba(142, 200, 154, 0.05) 100%);
+  }
+
+  .option-gradient-selected {
+    background: linear-gradient(135deg, rgba(0, 71, 105, 0.1) 0%, rgba(24, 169, 174, 0.1) 50%, rgba(142, 200, 154, 0.1) 100%);
+  }
+}
