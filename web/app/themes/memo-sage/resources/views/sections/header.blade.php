@@ -1,7 +1,8 @@
 <header class="gradient-bg sticky top-0 z-50 shadow-lg px-4 py-3">
   <div class="container mx-auto flex items-center justify-between">
     <a class="brand text-2xl font-bold text-white tracking-tight" href="{{ home_url('/') }}">
-      {!! $siteName !!}
+      
+      <img alt="Memo Tag Logo" loading="lazy" width="150" height="40" decoding="async" data-nimg="1" class="h-8 w-auto logo-header" style="color: transparent;" src="{{ home_url('/') }}/app/themes/memo-sage/resources/images/logo-memo-tag-white.svg">
     </a>
 
     @if (has_nav_menu('primary_navigation'))
