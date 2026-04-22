@@ -42,7 +42,7 @@ class WC_Memo_Tag_Checkout {
     public static function render_product_fields() {
         global $product;
 
-        if ( ! $product || 'memo_tag' !== $product->get_type() ) {
+        if ( ! $product ) {
             return;
         }
 
@@ -78,7 +78,7 @@ class WC_Memo_Tag_Checkout {
     public static function validate_add_to_cart( bool $passed, int $product_id, int $quantity ): bool {
         $product = wc_get_product( $product_id );
 
-        if ( ! $product || 'memo_tag' !== $product->get_type() ) {
+        if ( ! $product ) {
             return $passed;
         }
 
@@ -103,7 +103,7 @@ class WC_Memo_Tag_Checkout {
     public static function save_cart_item_data( array $cart_item_data, int $product_id ): array {
         $product = wc_get_product( $product_id );
 
-        if ( ! $product || 'memo_tag' !== $product->get_type() ) {
+        if ( ! $product ) {
             return $cart_item_data;
         }
 
