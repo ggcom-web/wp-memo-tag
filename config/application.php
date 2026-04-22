@@ -139,6 +139,12 @@ Config::define('LOGGED_IN_SALT', env('LOGGED_IN_SALT'));
 Config::define('NONCE_SALT', env('NONCE_SALT'));
 
 /**
+ * Supabase Settings
+ */
+Config::define('SUPABASE_URL', env('SUPABASE_URL'));
+Config::define('SUPABASE_SERVICE_ROLE_KEY', env('SUPABASE_SERVICE_ROLE_KEY'));
+
+/**
  * Custom Settings
  */
 Config::define('AUTOMATIC_UPDATER_DISABLED', true);
@@ -159,8 +165,8 @@ Config::define('CONCATENATE_SCRIPTS', false);
 /**
  * Debugging Settings
  */
-Config::define('WP_DEBUG_DISPLAY', false);
-Config::define('WP_DEBUG_LOG', false);
+Config::define('WP_DEBUG_LOG', true);
+Config::define('WP_DEBUG_DISPLAY', env('WP_DEBUG_DISPLAY') ?: false);
 Config::define('SCRIPT_DEBUG', false);
 ini_set('display_errors', '0');
 

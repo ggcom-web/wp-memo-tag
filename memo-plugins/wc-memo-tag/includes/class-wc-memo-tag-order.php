@@ -13,15 +13,14 @@ class WC_Memo_Tag_Order {
         // Copie des données du panier vers les meta de l'order item
         add_action( 'woocommerce_checkout_create_order_line_item', [ __CLASS__, 'save_order_item_meta' ], 10, 4 );
 
-        // Sauvegarde de l'adresse du détenteur dans l'order
-        add_action( 'woocommerce_checkout_update_order_meta',       [ __CLASS__, 'save_holder_address_meta' ] );
-
         // Affichage des meta dans l'admin de la commande
         add_action( 'woocommerce_after_order_itemmeta',             [ __CLASS__, 'display_order_item_meta' ], 10, 3 );
-        add_action( 'woocommerce_admin_order_data_after_shipping_address', [ __CLASS__, 'display_holder_address_admin' ] );
 
         // Affichage dans l'email de confirmation
         add_filter( 'woocommerce_order_item_get_formatted_meta_data', [ __CLASS__, 'format_order_item_meta' ], 10, 2 );
+
+        // Synchronisation vers Supabase lors de la validation (paiement reçu)
+        add_action( 'woocommerce_order_status_processing', [ __CLASS__, 'sync_order_to_supabase' ] );
     }
 
     // ----------------------------------------------------------------
@@ -51,30 +50,6 @@ class WC_Memo_Tag_Order {
         }
     }
 
-    /**
-     * Sauvegarde l'adresse du détenteur dans les meta de la commande.
-     *
-     * @param int $order_id
-     */
-    public static function save_holder_address_meta( int $order_id ) {
-        if ( ! isset( $_POST['memo_tag_different_holder'] ) ) {
-            return;
-        }
-
-        $fields = array_keys( WC_Memo_Tag_Checkout::get_holder_address_fields() );
-
-        foreach ( $fields as $field ) {
-            if ( isset( $_POST[ $field ] ) ) {
-                update_post_meta(
-                    $order_id,
-                    '_' . $field,
-                    sanitize_text_field( wp_unslash( $_POST[ $field ] ) )
-                );
-            }
-        }
-
-        update_post_meta( $order_id, '_memo_tag_different_holder', 'yes' );
-    }
 
     // ----------------------------------------------------------------
     // Affichage admin
@@ -88,45 +63,12 @@ class WC_Memo_Tag_Order {
      * @param WC_Product     $product
      */
     public static function display_order_item_meta( int $item_id, $item, $product ) {
-        if ( ! $product || 'memo_tag' !== $product->get_type() ) {
+        if ( ! $product ) {
             return;
         }
         // WooCommerce affiche automatiquement les meta ajoutées via add_meta_data.
     }
 
-    /**
-     * Affiche l'adresse du détenteur dans le bloc "Expédition" de l'admin.
-     *
-     * @param WC_Order $order
-     */
-    public static function display_holder_address_admin( WC_Order $order ) {
-        $order_id   = $order->get_id();
-        $is_diff    = get_post_meta( $order_id, '_memo_tag_different_holder', true );
-
-        if ( 'yes' !== $is_diff ) {
-            return;
-        }
-
-        $fields = [
-            '_memo_tag_holder_first_name' => __( 'Prénom', 'wc-memo-tag' ),
-            '_memo_tag_holder_last_name'  => __( 'Nom', 'wc-memo-tag' ),
-            '_memo_tag_holder_address_1'  => __( 'Adresse', 'wc-memo-tag' ),
-            '_memo_tag_holder_address_2'  => __( 'Complément', 'wc-memo-tag' ),
-            '_memo_tag_holder_postcode'   => __( 'Code postal', 'wc-memo-tag' ),
-            '_memo_tag_holder_city'       => __( 'Ville', 'wc-memo-tag' ),
-            '_memo_tag_holder_country'    => __( 'Pays', 'wc-memo-tag' ),
-        ];
-
-        echo '<h3>' . esc_html__( 'Adresse du détenteur Memo Tag', 'wc-memo-tag' ) . '</h3>';
-        echo '<address>';
-        foreach ( $fields as $meta_key => $label ) {
-            $value = get_post_meta( $order_id, $meta_key, true );
-            if ( $value ) {
-                echo '<strong>' . esc_html( $label ) . ' :</strong> ' . esc_html( $value ) . '<br>';
-            }
-        }
-        echo '</address>';
-    }
 
     // ----------------------------------------------------------------
     // Emails
@@ -138,5 +80,147 @@ class WC_Memo_Tag_Order {
     public static function format_order_item_meta( array $formatted_meta, WC_Order_Item $item ): array {
         // Les meta ajoutées avec add_meta_data sont déjà formatées par WooCommerce.
         return $formatted_meta;
+    }
+
+    // ----------------------------------------------------------------
+    // Synchronisation Supabase
+    // ----------------------------------------------------------------
+
+    /**
+     * Génère un ID unique de 5 caractères et vérifie sa disponibilité sur Supabase.
+     *
+     * @return string
+     */
+    public static function generate_unique_tag_id(): string {
+        $supabase_url = class_exists( 'Roots\WPConfig\Config' ) ? Roots\WPConfig\Config::get( 'SUPABASE_URL' ) : getenv( 'SUPABASE_URL' );
+        $service_role_key = class_exists( 'Roots\WPConfig\Config' ) ? Roots\WPConfig\Config::get( 'SUPABASE_SERVICE_ROLE_KEY' ) : getenv( 'SUPABASE_SERVICE_ROLE_KEY' );
+
+        if ( empty( $supabase_url ) || empty( $service_role_key ) ) {
+            error_log( 'Supabase generate_unique_tag_id failed: Credentials missing' );
+        }
+
+        $chars = 'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
+        $max_attempts = 10;
+        $attempt = 0;
+
+        while ($attempt < $max_attempts) {
+            $id = '';
+            for ($i = 0; $i < 5; $i++) {
+                $id .= $chars[rand(0, strlen($chars) - 1)];
+            }
+
+            // Vérifier sur Supabase
+            $response = wp_remote_get(
+                add_query_arg('id', 'eq.' . $id, $supabase_url . '/rest/v1/tags?select=id'),
+                [
+                    'headers' => [
+                        'apikey'        => $service_role_key,
+                        'Authorization' => 'Bearer ' . $service_role_key,
+                    ],
+                ]
+            );
+
+            if ( ! is_wp_error( $response ) ) {
+                $status = wp_remote_retrieve_response_code( $response );
+                $body   = wp_remote_retrieve_body( $response );
+                $data   = json_decode( $body, true );
+
+                if ( 200 === $status && empty( $data ) ) {
+                    return $id;
+                }
+            }
+
+            $attempt++;
+        }
+
+        // Fallback si unique non trouvé (peu probable avec 10 tentatives sur 900M+ de combinaisons)
+        return substr( md5( microtime() ), 0, 5 );
+    }
+
+    /**
+     * Synchronise les informations de livraison vers Supabase.
+     *
+     * @param int $order_id
+     */
+    public static function sync_order_to_supabase( int $order_id ) {
+        $order = wc_get_order( $order_id );
+        if ( ! $order ) {
+            return;
+        }
+
+        $supabase_url     = class_exists( 'Roots\WPConfig\Config' ) ? Roots\WPConfig\Config::get( 'SUPABASE_URL' ) : getenv( 'SUPABASE_URL' );
+        $service_role_key = class_exists( 'Roots\WPConfig\Config' ) ? Roots\WPConfig\Config::get( 'SUPABASE_SERVICE_ROLE_KEY' ) : getenv( 'SUPABASE_SERVICE_ROLE_KEY' );
+
+        if ( ! $supabase_url || ! $service_role_key ) {
+            error_log( 'Supabase sync failed for order #' . $order_id . ': Credentials missing.' );
+            return;
+        }
+
+        // Récupérer les infos de livraison (Shipping priority, fallback Billing)
+        $prenom    = $order->get_shipping_first_name() ?: $order->get_billing_first_name();
+        $nom       = $order->get_shipping_last_name() ?: $order->get_billing_last_name();
+        $ville     = $order->get_shipping_city() ?: $order->get_billing_city();
+        $email     = $order->get_billing_email();
+        $telephone = $order->get_billing_phone();
+        $societe   = $order->get_shipping_company() ?: $order->get_billing_company();
+
+        error_log( 'Supabase sync started for order #' . $order_id . ' with ' . count( $order->get_items() ) . ' line items.' );
+
+        // Parcourir TOUS les items de la commande
+        foreach ( $order->get_items() as $item ) {
+            $product = $item->get_product();
+            if ( ! $product ) {
+                continue;
+            }
+
+            $quantity = $item->get_quantity();
+
+            for ( $i = 0; $i < $quantity; $i++ ) {
+                $tag_id = self::generate_unique_tag_id();
+
+                $payload = [
+                    'id'              => $tag_id,
+                    'owner_nom'       => $nom,
+                    'owner_prenom'    => $prenom,
+                    'owner_email'     => $email,
+                    'owner_telephone' => $telephone,
+                    'owner_ville'     => $ville,
+                    'owner_societe'   => $societe,
+                    'active'          => true,
+                    'share_audio'     => true,
+                    'share_pdf'       => true,
+                    'share_link'      => true,
+                    'share_travel'    => true,
+                    'share_vcard'     => true,
+                    'share_video'     => true,
+                    'share_calendly'  => true,
+                    'order_id'        => (string)$order_id,
+                ];
+
+                $response = wp_remote_post(
+                    $supabase_url . '/rest/v1/tags',
+                    [
+                        'headers' => [
+                            'apikey'        => $service_role_key,
+                            'Authorization' => 'Bearer ' . $service_role_key,
+                            'Content-Type'  => 'application/json',
+                            'Prefer'        => 'return=minimal',
+                        ],
+                        'body'    => json_encode( $payload ),
+                    ]
+                );
+
+                if ( is_wp_error( $response ) ) {
+                    error_log( 'Supabase sync error for order #' . $order_id . ': ' . $response->get_error_message() );
+                } else {
+                    $status = wp_remote_retrieve_response_code( $response );
+                    if ( $status >= 300 ) {
+                        error_log( 'Supabase sync error for order #' . $order_id . ': Status ' . $status . ' - ' . wp_remote_retrieve_body( $response ) );
+                    } else {
+                        error_log( 'Supabase sync success for order #' . $order_id . ': Tag ' . $tag_id . ' created.' );
+                    }
+                }
+            }
+        }
     }
 }
