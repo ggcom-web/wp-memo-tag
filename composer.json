@@ -46,17 +46,19 @@
     "php": ">=8.3",
     "composer/installers": "^2.2",
     "gaelgerard/ggcom-mu-plugins": "dev-master",
+    "gaelgerard/memo-connect": "*",
+    "gaelgerard/wc-memo-tag": "*",
+    "generoi/sage-woocommerce": "^1.1",
     "oscarotero/env": "^2.1",
     "roots/bedrock-autoloader": "^1.0",
     "roots/bedrock-disallow-indexing": "^2.0",
     "roots/wordpress": "6.9.4",
     "roots/wp-config": "1.0.0",
     "vlucas/phpdotenv": "^5.5",
-    "wp-theme/twentytwentyfive": "^1.0",
     "wp-plugin/akismet": "*",
+    "wp-plugin/cf7-submissions": "*",
     "wp-plugin/code-snippets": "*",
     "wp-plugin/contact-form-7": "*",
-    "wp-plugin/cf7-submissions": "*",
     "wp-plugin/disable-comments": "*",
     "wp-plugin/duplicate-menu": "*",
     "wp-plugin/duplicate-page": "*",
@@ -73,17 +75,16 @@
     "wp-plugin/sucuri-scanner": "*",
     "wp-plugin/updraftplus": "*",
     "wp-plugin/user-role-editor": "*",
+    "wp-plugin/woocommerce": "^10.7",
     "wp-plugin/wordpress-importer": "*",
     "wp-plugin/wordpress-seo": "*",
     "wp-plugin/wp-crontrol": "*",
-    "wp-plugin/wp-mail-logging": "*"
+    "wp-plugin/wp-mail-logging": "*",
+    "wp-theme/twentytwentyfive": "^1.0"
   },
   "require-dev": {
     "laravel/pint": "^1.27",
-    "pestphp/pest": "^4.0",
-    "wp-plugin/woocommerce": "^10.7",
-    "gaelgerard/memo-connect": "*",
-    "gaelgerard/wc-memo-tag": "*"
+    "pestphp/pest": "^4.0"
   },
   "config": {
     "optimize-autoloader": true,
