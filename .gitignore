@@ -32,3 +32,4 @@ phpunit.xml
 
 # WP-CLI
 wp-cli.local.yml
+*.sql
