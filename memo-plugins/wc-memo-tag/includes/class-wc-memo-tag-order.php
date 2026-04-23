@@ -20,7 +20,19 @@ class WC_Memo_Tag_Order {
         add_filter( 'woocommerce_order_item_get_formatted_meta_data', [ __CLASS__, 'format_order_item_meta' ], 10, 2 );
 
         // Synchronisation vers Supabase lors de la validation (paiement reçu)
-        add_action( 'woocommerce_order_status_processing', [ __CLASS__, 'sync_order_to_supabase' ] );
+        // Priorité 5 pour s'assurer que c'est fait AVANT l'envoi de l'email (priorité 10)
+        add_action( 'woocommerce_order_status_processing', [ __CLASS__, 'sync_order_to_supabase' ], 5, 2 );
+
+        // Autocomplete commande
+        add_action( 'woocommerce_order_status_processing', [ __CLASS__, 'autocomplete_order' ], 20 );
+
+        // Personnalisation de l'email
+        add_filter( 'woocommerce_order_item_name',           [ __CLASS__, 'customize_order_item_name' ], 10, 3 );
+        add_action( 'woocommerce_order_item_meta_end',       [ __CLASS__, 'display_tag_links_in_email' ], 10, 4 );
+        add_action( 'woocommerce_email_after_order_table', [ __CLASS__, 'add_email_footer_text' ], 10, 3 );
+
+        // Désactivation de l'email "Commande terminée" car redondant avec "Commande reçue"
+        add_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
     }
 
     // ----------------------------------------------------------------
@@ -142,8 +154,10 @@ class WC_Memo_Tag_Order {
      *
      * @param int $order_id
      */
-    public static function sync_order_to_supabase( int $order_id ) {
-        $order = wc_get_order( $order_id );
+    public static function sync_order_to_supabase( int $order_id, $order = null ) {
+        if ( ! $order instanceof WC_Order ) {
+            $order = wc_get_order( $order_id );
+        }
         if ( ! $order ) {
             return;
         }
@@ -174,6 +188,7 @@ class WC_Memo_Tag_Order {
             }
 
             $quantity = $item->get_quantity();
+            $tag_ids  = [];
 
             for ( $i = 0; $i < $quantity; $i++ ) {
                 $tag_id = self::generate_unique_tag_id();
@@ -220,9 +235,88 @@ class WC_Memo_Tag_Order {
                         error_log( 'Supabase sync error for order #' . $order_id . ': Status ' . $status . ' - ' . wp_remote_retrieve_body( $response ) );
                     } else {
                         error_log( 'Supabase sync success for order #' . $order_id . ': Tag ' . $tag_id . ' created.' );
+                        $tag_ids[] = $tag_id;
                     }
                 }
             }
+
+            if ( ! empty( $tag_ids ) ) {
+                $item->add_meta_data( '_memo_tag_ids', $tag_ids, true );
+                $item->save();
+            }
+        }
+    }
+    /**
+     * Passe automatiquement la commande à "terminée" après synchronisation.
+     */
+    public static function autocomplete_order( int $order_id ) {
+        $order = wc_get_order( $order_id );
+        if ( $order && $order->has_status( 'processing' ) ) {
+            $order->update_status( 'completed', __( 'Autocomplete par Memo Tag.', 'wc-memo-tag' ) );
+        }
+    }
+
+    /**
+     * Remplace le nom du produit par la description courte dans l'email.
+     */
+    public static function customize_order_item_name( string $item_name, WC_Order_Item $item, bool $is_visible = true ): string {
+        // On vérifie si on est dans un contexte d'email ou côté client
+        // is_admin() peut être vrai si l'email est déclenché depuis l'admin, donc on check aussi WC_REDACT_ADMIN_EMAIL ou d'autres indices
+        $is_email = did_action( 'woocommerce_email_header' ) || did_action( 'woocommerce_before_template_part' );
+        
+        if ( ! is_admin() || $is_email || ( defined( 'DOING_AJAX' ) && DOING_AJAX ) ) {
+            $description = $item->get_meta( __( 'Description Memo Tag', 'wc-memo-tag' ) );
+            if ( ! empty( $description ) ) {
+                return '<strong>' . esc_html( $description ) . '</strong>';
+            }
+        }
+        return $item_name;
+    }
+
+    /**
+     * Affiche les liens vers les memo-tags sous chaque item dans l'email.
+     */
+    public static function display_tag_links_in_email( $item_id, $item, $order, $plain_text = false ) {
+        if ( $plain_text ) {
+            return;
+        }
+
+        $tag_ids = $item->get_meta( '_memo_tag_ids' );
+        
+        if ( empty( $tag_ids ) ) {
+            return;
+        }
+
+        // Si c'est un ID unique (string), on le convertit en tableau pour la boucle
+        if ( ! is_array( $tag_ids ) ) {
+            $tag_ids = array( $tag_ids );
+        }
+
+        echo '<div class="memo-tag-links" style="margin-top: 10px; padding: 10px; border: 1px dashed #ccc; background: #fdfdfd;">';
+        echo '<p style="margin: 0 0 5px 0; font-weight: bold; font-size: 0.9em;">' . esc_html__( 'Vos liens Memo-Tag :', 'wc-memo-tag' ) . '</p>';
+        foreach ( $tag_ids as $tag_id ) {
+            $link = 'https://memo-tag.fr/' . $tag_id;
+            echo '<p style="margin: 0; font-family: monospace;">';
+            echo '<a href="' . esc_url( $link ) . '" target="_blank">' . esc_html( $link ) . '</a>';
+            echo '</p>';
+        }
+        echo '</div>';
+    }
+
+    /**
+     * Ajoute le texte de pied de page dans l'email.
+     */
+    public static function add_email_footer_text( $order, $sent_to_admin, $plain_text ) {
+        if ( $sent_to_admin ) {
+            return;
+        }
+
+        $text = __( 'Rendez vous à l\'adresse du Memo-Tag pour configurer votre contenu et télécharger le tag', 'wc-memo-tag' );
+        
+        if ( $plain_text ) {
+            echo "\n" . esc_html( $text ) . "\n";
+        } else {
+            echo '<p style="margin-top: 20px; font-weight: bold;">' . esc_html( $text ) . '</p>';
         }
     }
 }
