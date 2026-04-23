@@ -83,6 +83,7 @@
     "wp-theme/twentytwentyfive": "^1.0"
   },
   "require-dev": {
+    "wp-plugin/wp-mail-smtp": "*",
     "laravel/pint": "^1.27",
     "pestphp/pest": "^4.0"
   },
