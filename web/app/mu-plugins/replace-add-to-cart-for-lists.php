@@ -22,4 +22,4 @@ function replace_loop_add_to_cart_button( $button, $product  ) {
 
     return $button_container;
     
-    }
+}
