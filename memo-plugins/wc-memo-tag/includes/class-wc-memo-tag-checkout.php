@@ -24,6 +24,45 @@ class WC_Memo_Tag_Checkout {
 
         // Affichage dans le panier et le checkout
         add_filter( 'woocommerce_get_item_data', [ __CLASS__, 'get_item_data' ], 10, 2 );
+
+        // Nouveaux champs pour le Checkout (Compatibilité Blocks et Classique)
+        add_action( 'init', [ __CLASS__, 'register_additional_checkout_fields' ] );
+        add_filter( 'woocommerce_shipping_fields', [ __CLASS__, 'add_shipping_fields' ] );
+    }
+
+    /**
+     * Enregistre les champs additionnels pour le nouveau Checkout Block (WC 8.5+).
+     */
+    public static function register_additional_checkout_fields() {
+        if ( ! function_exists( 'woocommerce_register_additional_checkout_field' ) ) {
+            return;
+        }
+
+        woocommerce_register_additional_checkout_field( [
+            'id'          => 'wc-memo-tag/shipping-email',
+            'label'       => __( 'E-mail du détenteur (Livraison)', 'wc-memo-tag' ),
+            'location'    => 'order',
+            'type'        => 'text',
+            'attributes'  => [
+                'autocomplete' => 'email',
+            ],
+            'required'    => false,
+        ] );
+    }
+
+    /**
+     * Ajoute les champs pour le checkout classique (Shortcode).
+     */
+    public static function add_shipping_fields( $fields ) {
+        $fields['shipping_email'] = [
+            'label'       => __( 'E-mail du détenteur (Livraison)', 'wc-memo-tag' ),
+            'placeholder' => __( 'L\'e-mail pour Supabase...', 'wc-memo-tag' ),
+            'required'    => false,
+            'class'       => [ 'form-row-wide' ],
+            'validate'    => [ 'email' ],
+            'priority'    => 100,
+        ];
+        return $fields;
     }
 
     /**

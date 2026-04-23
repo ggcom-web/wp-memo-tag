@@ -170,13 +170,35 @@ class WC_Memo_Tag_Order {
             return;
         }
 
-        // Récupérer les infos de livraison (Shipping priority, fallback Billing)
+        // Récupérer les infos de livraison (Priorité Shipping, fallback Billing)
         $prenom    = $order->get_shipping_first_name() ?: $order->get_billing_first_name();
         $nom       = $order->get_shipping_last_name() ?: $order->get_billing_last_name();
         $ville     = $order->get_shipping_city() ?: $order->get_billing_city();
-        $email     = $order->get_billing_email();
-        $telephone = $order->get_billing_phone();
         $societe   = $order->get_shipping_company() ?: $order->get_billing_company();
+
+        // Récupérer l'email (Priorité champs livraison custom, fallback Billing)
+        $email = '';
+        error_log( 'Supabase sync: Searching for shipping email in order #' . $order_id );
+        
+        foreach ( $order->get_meta_data() as $meta ) {
+            $key = strtolower( $meta->key );
+            // On cherche n'importe quelle clé qui contient 'shipping' ET 'email'
+            if ( strpos( $key, 'shipping' ) !== false && strpos( $key, 'email' ) !== false ) {
+                $val = is_array( $meta->value ) ? reset( $meta->value ) : $meta->value;
+                if ( ! empty( $val ) ) {
+                    $email = $val;
+                    error_log( "Supabase sync: Found shipping email in meta '{$meta->key}': {$email}" );
+                    break;
+                }
+            }
+        }
+
+        if ( empty( $email ) ) {
+            $email = $order->get_billing_email();
+            error_log( "Supabase sync: No shipping email found, using billing email: {$email}" );
+        }
+
+        $telephone = $order->get_shipping_phone();
 
         error_log( 'Supabase sync started for order #' . $order_id . ' with ' . count( $order->get_items() ) . ' line items.' );
 
