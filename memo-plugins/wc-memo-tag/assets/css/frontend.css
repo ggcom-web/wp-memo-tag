@@ -14,7 +14,8 @@
     margin-bottom: .4em;
 }
 
-.memo-tag-product-fields input[type="text"] {
+.memo-tag-product-fields input[type="text"],
+.memo-tag-product-fields textarea {
     width: 100%;
     padding: 10px;
     border: 1px solid #ccc;

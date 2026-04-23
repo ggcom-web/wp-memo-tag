@@ -177,24 +177,26 @@ class WC_Memo_Tag_Order {
 
             for ( $i = 0; $i < $quantity; $i++ ) {
                 $tag_id = self::generate_unique_tag_id();
+                $description = $item->get_meta( __( 'Description Memo Tag', 'wc-memo-tag' ) );
 
                 $payload = [
-                    'id'              => $tag_id,
-                    'owner_nom'       => $nom,
-                    'owner_prenom'    => $prenom,
-                    'owner_email'     => $email,
-                    'owner_telephone' => $telephone,
-                    'owner_ville'     => $ville,
-                    'owner_societe'   => $societe,
-                    'active'          => true,
-                    'share_audio'     => true,
-                    'share_pdf'       => true,
-                    'share_link'      => true,
-                    'share_travel'    => true,
-                    'share_vcard'     => true,
-                    'share_video'     => true,
-                    'share_calendly'  => true,
-                    'order_id'        => (string)$order_id,
+                    'id'                => $tag_id,
+                    'short_description' => $description,
+                    'owner_nom'         => $nom,
+                    'owner_prenom'      => $prenom,
+                    'owner_email'       => $email,
+                    'owner_telephone'   => $telephone,
+                    'owner_ville'       => $ville,
+                    'owner_societe'     => $societe,
+                    'active'            => true,
+                    'share_audio'       => true,
+                    'share_pdf'         => true,
+                    'share_link'        => true,
+                    'share_travel'      => true,
+                    'share_vcard'       => true,
+                    'share_video'       => true,
+                    'share_calendly'    => true,
+                    'order_id'          => (string)$order_id,
                 ];
 
                 $response = wp_remote_post(
