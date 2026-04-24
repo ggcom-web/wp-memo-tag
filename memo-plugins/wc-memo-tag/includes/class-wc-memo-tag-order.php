@@ -31,6 +31,9 @@ class WC_Memo_Tag_Order {
         add_action( 'woocommerce_order_item_meta_end',       [ __CLASS__, 'display_tag_links_in_email' ], 10, 4 );
         add_action( 'woocommerce_email_after_order_table', [ __CLASS__, 'add_email_footer_text' ], 10, 3 );
 
+        // Création du compte à la commande
+        add_action( 'woocommerce_order_status_completed',           [ __CLASS__, 'handle_order_completion' ] );
+
         // Désactivation de l'email "Commande terminée" car redondant avec "Commande reçue"
         add_filter( 'woocommerce_email_enabled_customer_completed_order', '__return_false' );
     }
@@ -341,4 +344,52 @@ class WC_Memo_Tag_Order {
             echo '<p style="margin-top: 20px; font-weight: bold;">' . esc_html( $text ) . '</p>';
         }
     }
+    /**
+	 * Handle WooCommerce Order Completion.
+	 *
+	 * Create account on order completion if no account.
+	 *
+	 * @since    1.0.0
+	 * @param    int    $order_id    The ID of the completed order.
+	 */
+	public static function handle_order_completion( $order_id ) {
+		error_log( 'OC4WP Debug: handle_order_completion called for order ' . $order_id );
+
+		if ( ! $order_id ) {
+			return;
+		}
+
+		$order = wc_get_order( $order_id );
+		if ( ! $order ) {
+			return;
+		}
+
+		// Handle User Creation 
+		$user_id = $order->get_user_id();
+
+		// Handle Guest Checkout
+		if ( ! $user_id ) {
+			error_log( 'OC4WP Debug: No user ID on order. Checking billing email.' );
+			$email = $order->get_billing_email();
+
+			if ( email_exists( $email ) ) {
+				error_log( 'OC4WP Debug: User exists for email ' . $email . '. Linking order.' );
+				$user = get_user_by( 'email', $email );
+				$user_id = $user->ID;
+			} else {
+				error_log( 'OC4WP Debug: No user found. Creating new customer for ' . $email );
+				$password = wp_generate_password();
+				$user_id = wc_create_new_customer( $email, '', $password ); // Username, Email, Password
+				if ( is_wp_error( $user_id ) ) {
+					error_log( 'OC4WP Error: Failed to create user: ' . $user_id->get_error_message() );
+					return;
+				}
+			}
+
+			// Link order to user
+			$order->set_customer_id( $user_id );
+			$order->save();
+			error_log( 'OC4WP Debug: Order linked to User ID ' . $user_id );
+		}
+	}
 }
