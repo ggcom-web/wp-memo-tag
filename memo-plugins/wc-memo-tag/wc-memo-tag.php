@@ -51,11 +51,13 @@ add_action( 'plugins_loaded', function () {
     require_once WC_MEMO_TAG_PLUGIN_DIR . 'includes/class-wc-memo-tag-checkout.php';
     require_once WC_MEMO_TAG_PLUGIN_DIR . 'includes/class-wc-memo-tag-order.php';
     require_once WC_MEMO_TAG_PLUGIN_DIR . 'includes/class-wc-memo-tag-assets.php';
+    require_once WC_MEMO_TAG_PLUGIN_DIR . 'includes/class-wc-memo-tag-account.php';
 
     // Initialisation des modules
     WC_Memo_Tag_Checkout::init();
     WC_Memo_Tag_Order::init();
     WC_Memo_Tag_Assets::init();
+    WC_Memo_Tag_Account::init();
 } );
 
 /**
