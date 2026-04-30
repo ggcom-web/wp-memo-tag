@@ -14,10 +14,11 @@ class WC_Memo_Tag_Account {
         add_filter( 'woocommerce_account_menu_items', [ __CLASS__, 'add_menu_item' ] );
         
         // Enregistrer l'endpoint
-        add_action( 'init', [ __CLASS__, 'add_endpoint' ] );
+        add_action( 'init', [ __CLASS__, 'add_endpoints' ] );
         
         // Ajouter le contenu
-        add_action( 'woocommerce_account_mes-memo-tags_endpoint', [ __CLASS__, 'endpoint_content' ] );
+        add_action( 'woocommerce_account_mes-memo-tags_endpoint', [ __CLASS__, 'endpoint_content_mes_tags' ] );
+        add_action( 'woocommerce_account_tags-offerts_endpoint', [ __CLASS__, 'endpoint_content_tags_offerts' ] );
 
         // AJAX update description
         add_action( 'wp_ajax_update_memo_tag_description', [ __CLASS__, 'update_description_ajax' ] );
@@ -29,6 +30,7 @@ class WC_Memo_Tag_Account {
         foreach ( $items as $key => $value ) {
             if ( 'customer-logout' === $key ) {
                 $new_items['mes-memo-tags'] = __( 'Mes Memo Tags', 'wc-memo-tag' );
+                $new_items['tags-offerts']  = __( 'Tags Offerts', 'wc-memo-tag' );
             }
             $new_items[ $key ] = $value;
         }
@@ -36,16 +38,26 @@ class WC_Memo_Tag_Account {
         // Au cas où customer-logout n'existe pas
         if ( ! isset( $new_items['mes-memo-tags'] ) ) {
             $new_items['mes-memo-tags'] = __( 'Mes Memo Tags', 'wc-memo-tag' );
+            $new_items['tags-offerts']  = __( 'Tags Offerts', 'wc-memo-tag' );
         }
         
         return $new_items;
     }
 
-    public static function add_endpoint() {
+    public static function add_endpoints() {
         add_rewrite_endpoint( 'mes-memo-tags', EP_ROOT | EP_PAGES );
+        add_rewrite_endpoint( 'tags-offerts', EP_ROOT | EP_PAGES );
     }
 
-    public static function endpoint_content() {
+    public static function endpoint_content_mes_tags() {
+        self::render_endpoint_content( 'mes_tags' );
+    }
+
+    public static function endpoint_content_tags_offerts() {
+        self::render_endpoint_content( 'tags_offerts' );
+    }
+
+    private static function render_endpoint_content( $type ) {
         $user = wp_get_current_user();
         if ( ! $user || ! $user->user_email ) {
             echo '<p>' . esc_html__( 'Vous devez être connecté.', 'wc-memo-tag' ) . '</p>';
@@ -60,9 +72,37 @@ class WC_Memo_Tag_Account {
             return;
         }
 
+        if ( $type === 'mes_tags' ) {
+            $query_args = [
+                'owner_email' => 'eq.' . urlencode( $user->user_email ),
+            ];
+            $empty_message = __( 'Vous n\'avez aucun Memo Tag pour le moment.', 'wc-memo-tag' );
+            $title = __( 'Mes Memo Tags', 'wc-memo-tag' );
+        } else {
+            $customer_orders = wc_get_orders( [
+                'customer' => get_current_user_id(),
+                'limit'    => -1,
+                'return'   => 'ids',
+            ] );
+
+            if ( empty( $customer_orders ) ) {
+                echo '<p>' . esc_html__( 'Vous n\'avez aucun Memo Tag offert pour le moment.', 'wc-memo-tag' ) . '</p>';
+                return;
+            }
+
+            $order_ids_list = implode( ',', $customer_orders );
+
+            $query_args = [
+                'order_id'    => 'in.(' . urlencode( $order_ids_list ) . ')',
+                'owner_email' => 'neq.' . urlencode( $user->user_email ),
+            ];
+            $empty_message = __( 'Vous n\'avez aucun Memo Tag offert pour le moment.', 'wc-memo-tag' );
+            $title = __( 'Tags Offerts', 'wc-memo-tag' );
+        }
+
         // Récupérer les tags de l'utilisateur
         $response = wp_remote_get(
-            add_query_arg( 'owner_email', 'eq.' . urlencode( $user->user_email ), $supabase_url . '/rest/v1/tags' ),
+            add_query_arg( $query_args, $supabase_url . '/rest/v1/tags' ),
             [
                 'headers' => [
                     'apikey'        => $service_role_key,
@@ -85,7 +125,7 @@ class WC_Memo_Tag_Account {
         $tags = json_decode( wp_remote_retrieve_body( $response ), true );
 
         if ( empty( $tags ) ) {
-            echo '<p>' . esc_html__( 'Vous n\'avez aucun Memo Tag pour le moment.', 'wc-memo-tag' ) . '</p>';
+            echo '<p>' . esc_html( $empty_message ) . '</p>';
             return;
         }
 
@@ -113,7 +153,7 @@ class WC_Memo_Tag_Account {
             }
         }
 
-        echo '<h2>' . esc_html__( 'Mes Memo Tags', 'wc-memo-tag' ) . '</h2>';
+        echo '<h2>' . esc_html( $title ) . '</h2>';
         echo '<table class="woocommerce-orders-table woocommerce-MyAccount-orders shop_table shop_table_responsive my_account_orders account-orders-table">';
         echo '<thead><tr>';
         echo '<th class="woocommerce-orders-table__header">' . esc_html__( 'ID', 'wc-memo-tag' ) . '</th>';
@@ -166,72 +206,75 @@ class WC_Memo_Tag_Account {
         // Ajouter le script pour l'édition en ligne
         ?>
         <script>
-        document.addEventListener('DOMContentLoaded', function() {
-            const containers = document.querySelectorAll('.memo-tag-desc-container');
-            containers.forEach(container => {
-                const textSpan = container.querySelector('.memo-tag-desc-text');
-                const editBtn = container.querySelector('.memo-tag-edit-btn');
-                const editForm = container.querySelector('.memo-tag-edit-form');
-                const inputField = container.querySelector('.memo-tag-desc-input');
-                const saveBtn = container.querySelector('.memo-tag-save-btn');
-                const cancelBtn = container.querySelector('.memo-tag-cancel-btn');
-                const loader = container.querySelector('.memo-tag-desc-loader');
-                const tagId = container.getAttribute('data-tag-id');
+        if (typeof window.memoTagEditInitialized === 'undefined') {
+            window.memoTagEditInitialized = true;
+            document.addEventListener('DOMContentLoaded', function() {
+                const containers = document.querySelectorAll('.memo-tag-desc-container');
+                containers.forEach(container => {
+                    const textSpan = container.querySelector('.memo-tag-desc-text');
+                    const editBtn = container.querySelector('.memo-tag-edit-btn');
+                    const editForm = container.querySelector('.memo-tag-edit-form');
+                    const inputField = container.querySelector('.memo-tag-desc-input');
+                    const saveBtn = container.querySelector('.memo-tag-save-btn');
+                    const cancelBtn = container.querySelector('.memo-tag-cancel-btn');
+                    const loader = container.querySelector('.memo-tag-desc-loader');
+                    const tagId = container.getAttribute('data-tag-id');
 
-                editBtn.addEventListener('click', () => {
-                    textSpan.style.display = 'none';
-                    editBtn.style.display = 'none';
-                    editForm.style.display = 'flex';
-                    inputField.focus();
-                });
+                    editBtn.addEventListener('click', () => {
+                        textSpan.style.display = 'none';
+                        editBtn.style.display = 'none';
+                        editForm.style.display = 'flex';
+                        inputField.focus();
+                    });
 
-                cancelBtn.addEventListener('click', () => {
-                    editForm.style.display = 'none';
-                    textSpan.style.display = 'inline';
-                    editBtn.style.display = 'inline';
-                    inputField.value = textSpan.innerText;
-                });
-
-                saveBtn.addEventListener('click', () => {
-                    const newDesc = inputField.value.trim();
-                    editForm.style.display = 'none';
-                    loader.style.display = 'inline';
-
-                    const formData = new URLSearchParams();
-                    formData.append('action', 'update_memo_tag_description');
-                    formData.append('tag_id', tagId);
-                    formData.append('description', newDesc);
-                    formData.append('nonce', '<?php echo esc_js( wp_create_nonce( 'update_memo_tag_desc' ) ); ?>');
-
-                    fetch('<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
-                        method: 'POST',
-                        body: formData,
-                        headers: {
-                            'Content-Type': 'application/x-www-form-urlencoded'
-                        }
-                    })
-                    .then(res => res.json())
-                    .then(data => {
-                        loader.style.display = 'none';
-                        if (data.success) {
-                            textSpan.innerText = newDesc;
-                        } else {
-                            alert(data.data || 'Erreur lors de la mise à jour.');
-                            inputField.value = textSpan.innerText;
-                        }
+                    cancelBtn.addEventListener('click', () => {
+                        editForm.style.display = 'none';
                         textSpan.style.display = 'inline';
                         editBtn.style.display = 'inline';
-                    })
-                    .catch(err => {
-                        loader.style.display = 'none';
-                        alert('Erreur réseau.');
                         inputField.value = textSpan.innerText;
-                        textSpan.style.display = 'inline';
-                        editBtn.style.display = 'inline';
+                    });
+
+                    saveBtn.addEventListener('click', () => {
+                        const newDesc = inputField.value.trim();
+                        editForm.style.display = 'none';
+                        loader.style.display = 'inline';
+
+                        const formData = new URLSearchParams();
+                        formData.append('action', 'update_memo_tag_description');
+                        formData.append('tag_id', tagId);
+                        formData.append('description', newDesc);
+                        formData.append('nonce', '<?php echo esc_js( wp_create_nonce( 'update_memo_tag_desc' ) ); ?>');
+
+                        fetch('<?php echo esc_url( admin_url( 'admin-ajax.php' ) ); ?>', {
+                            method: 'POST',
+                            body: formData,
+                            headers: {
+                                'Content-Type': 'application/x-www-form-urlencoded'
+                            }
+                        })
+                        .then(res => res.json())
+                        .then(data => {
+                            loader.style.display = 'none';
+                            if (data.success) {
+                                textSpan.innerText = newDesc;
+                            } else {
+                                alert(data.data || 'Erreur lors de la mise à jour.');
+                                inputField.value = textSpan.innerText;
+                            }
+                            textSpan.style.display = 'inline';
+                            editBtn.style.display = 'inline';
+                        })
+                        .catch(err => {
+                            loader.style.display = 'none';
+                            alert('Erreur réseau.');
+                            inputField.value = textSpan.innerText;
+                            textSpan.style.display = 'inline';
+                            editBtn.style.display = 'inline';
+                        });
                     });
                 });
             });
-        });
+        }
         </script>
         <?php
     }
@@ -258,11 +301,11 @@ class WC_Memo_Tag_Account {
             wp_send_json_error( 'Erreur de configuration Supabase.' );
         }
 
-        // Vérifier que le tag appartient bien à l'utilisateur
+        // Vérifier que le tag appartient bien à l'utilisateur (propriétaire ou acheteur)
         $check_response = wp_remote_get(
             add_query_arg( [
                 'id' => 'eq.' . $tag_id,
-                'owner_email' => 'eq.' . urlencode( $user->user_email )
+                'select' => 'owner_email,order_id'
             ], $supabase_url . '/rest/v1/tags' ),
             [
                 'headers' => [
@@ -278,7 +321,22 @@ class WC_Memo_Tag_Account {
 
         $tags = json_decode( wp_remote_retrieve_body( $check_response ), true );
         if ( empty( $tags ) ) {
-            wp_send_json_error( 'Tag introuvable ou non autorisé.' );
+            wp_send_json_error( 'Tag introuvable.' );
+        }
+
+        $tag = $tags[0];
+        $is_owner = ( $tag['owner_email'] === $user->user_email );
+        $is_buyer = false;
+
+        if ( ! empty( $tag['order_id'] ) ) {
+            $order = wc_get_order( $tag['order_id'] );
+            if ( $order && $order->get_customer_id() == get_current_user_id() ) {
+                $is_buyer = true;
+            }
+        }
+
+        if ( ! $is_owner && ! $is_buyer ) {
+            wp_send_json_error( 'Non autorisé.' );
         }
 
         // On met à jour
