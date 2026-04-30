@@ -342,6 +342,7 @@ class WC_Memo_Tag_Account {
         // On met à jour
         $payload = [
             'short_description' => $description,
+            'updated_at'        => gmdate( 'Y-m-d\TH:i:s\Z' ),
         ];
 
         $update_response = wp_remote_request(
