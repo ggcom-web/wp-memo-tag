@@ -63,6 +63,36 @@ class WC_Memo_Tag_Order {
                 true
             );
         }
+
+        if ( ! empty( $values['memo_tag_share_options'] ) ) {
+            $active_options = [];
+            $labels = [
+                'share_audio'    => 'Audio',
+                'share_pdf'      => 'PDF',
+                'share_link'     => 'Lien',
+                'share_travel'   => 'Voyage',
+                'share_vcard'    => 'VCard',
+                'share_video'    => 'Vidéo',
+                'share_calendly' => 'Calendly',
+            ];
+            foreach ( $values['memo_tag_share_options'] as $key => $is_active ) {
+                if ( $is_active && isset( $labels[ $key ] ) ) {
+                    $active_options[] = $labels[ $key ];
+                }
+            }
+            $val = ! empty( $active_options ) ? implode( ', ', $active_options ) : __( 'Aucune', 'wc-memo-tag' );
+            $item->add_meta_data(
+                __( 'Options de partage', 'wc-memo-tag' ),
+                $val,
+                true
+            );
+
+            $item->add_meta_data(
+                '_memo_tag_share_options',
+                $values['memo_tag_share_options'],
+                true
+            );
+        }
     }
 
 
@@ -219,6 +249,19 @@ class WC_Memo_Tag_Order {
                 $tag_id = self::generate_unique_tag_id();
                 $description = $item->get_meta( __( 'Description Memo Tag', 'wc-memo-tag' ) );
 
+                $share_options = $item->get_meta( '_memo_tag_share_options' );
+                if ( ! is_array( $share_options ) ) {
+                    $share_options = [
+                        'share_audio'    => true,
+                        'share_pdf'      => true,
+                        'share_link'     => true,
+                        'share_travel'   => true,
+                        'share_vcard'    => true,
+                        'share_video'    => true,
+                        'share_calendly' => true,
+                    ];
+                }
+
                 $payload = [
                     'id'                => $tag_id,
                     'short_description' => $description,
@@ -229,13 +272,13 @@ class WC_Memo_Tag_Order {
                     'owner_ville'       => $ville,
                     'owner_societe'     => $societe,
                     'active'            => true,
-                    'share_audio'       => true,
-                    'share_pdf'         => true,
-                    'share_link'        => true,
-                    'share_travel'      => true,
-                    'share_vcard'       => true,
-                    'share_video'       => true,
-                    'share_calendly'    => true,
+                    'share_audio'       => isset( $share_options['share_audio'] ) ? (bool)$share_options['share_audio'] : true,
+                    'share_pdf'         => isset( $share_options['share_pdf'] ) ? (bool)$share_options['share_pdf'] : true,
+                    'share_link'        => isset( $share_options['share_link'] ) ? (bool)$share_options['share_link'] : true,
+                    'share_travel'      => isset( $share_options['share_travel'] ) ? (bool)$share_options['share_travel'] : true,
+                    'share_vcard'       => isset( $share_options['share_vcard'] ) ? (bool)$share_options['share_vcard'] : true,
+                    'share_video'       => isset( $share_options['share_video'] ) ? (bool)$share_options['share_video'] : true,
+                    'share_calendly'    => isset( $share_options['share_calendly'] ) ? (bool)$share_options['share_calendly'] : true,
                     'order_id'          => (string)$order_id,
                 ];
 

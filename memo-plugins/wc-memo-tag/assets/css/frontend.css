@@ -22,6 +22,140 @@
     border-radius: 4px;
 }
 
+/* Options de partage – Grille et cartes premium */
+.memo-tag-share-options-container {
+    margin-top: 1.5em;
+    padding-top: 1.5em;
+    border-top: 1px dashed #e2e8f0;
+}
+
+.memo-tag-share-options-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 4px 0 !important;
+}
+
+.memo-tag-share-options-subtitle {
+    font-size: 12px;
+    color: #64748b;
+    margin: 0 0 15px 0 !important;
+    line-height: 1.4;
+}
+
+.memo-tag-share-options-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
+}
+
+.memo-tag-product-fields label.memo-tag-share-option-card {
+    position: relative;
+    display: block;
+    cursor: pointer;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    background: #ffffff;
+    padding: 0;
+    margin: 0;
+    font-weight: normal;
+    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.memo-tag-share-option-card-inner {
+    padding: 12px 14px;
+    display: flex;
+    align-items: flex-start;
+    position: relative;
+}
+
+.memo-tag-share-option-card input[type="checkbox"] {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    margin: 0 !important;
+    width: 18px !important;
+    height: 18px !important;
+    accent-color: #4f46e5;
+    cursor: pointer;
+    z-index: 2;
+    float: none !important;
+}
+
+.memo-tag-share-option-info {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    width: 100%;
+}
+
+.memo-tag-share-option-icon {
+    font-size: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #f1f5f9;
+    border-radius: 8px;
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    transition: all 0.25s ease;
+}
+
+.memo-tag-share-option-text {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.memo-tag-share-option-label {
+    font-weight: 600;
+    font-size: 14px;
+    color: #1e293b;
+    margin: 0;
+    line-height: 1.2;
+}
+
+.memo-tag-share-option-desc {
+    font-size: 11px;
+    color: #64748b;
+    margin-top: 2px;
+    line-height: 1.3;
+}
+
+/* Animations et états sélectionnés */
+.memo-tag-product-fields label.memo-tag-share-option-card:hover {
+    border-color: #cbd5e1;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+}
+
+.memo-tag-product-fields label.memo-tag-share-option-card:has(input[type="checkbox"]:checked) {
+    border-color: #6366f1;
+    background-color: #f8fafc;
+    box-shadow: 0 4px 15px rgba(99, 102, 241, 0.08);
+}
+
+.memo-tag-product-fields label.memo-tag-share-option-card:has(input[type="checkbox"]:checked) .memo-tag-share-option-icon {
+    background: #e0e7ff;
+    transform: scale(1.05);
+}
+
+.memo-tag-product-fields label.memo-tag-share-option-card:has(input[type="checkbox"]:checked) .memo-tag-share-option-label {
+    color: #4f46e5;
+}
+
+/* Fallback pure-CSS si :has() n'est pas pris en compte pour certains anciens navigateurs */
+.memo-tag-share-option-card input[type="checkbox"]:checked ~ .memo-tag-share-option-info .memo-tag-share-option-icon {
+    background: #e0e7ff;
+    transform: scale(1.05);
+}
+
+.memo-tag-share-option-card input[type="checkbox"]:checked ~ .memo-tag-share-option-info .memo-tag-share-option-label {
+    color: #4f46e5;
+}
+
 /* Adresse du détenteur – checkout */
 /* Masquer le titre par défaut "Expédition" si nécessaire via JS ou CSS */
 .woocommerce-shipping-fields > h3#ship-to-different-address {
