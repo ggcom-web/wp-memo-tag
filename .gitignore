@@ -35,3 +35,4 @@ wp-cli.local.yml
 *.sql
 web/app/updraft/*
 web/app/litespeed/*
+wp-cli.local.yml
