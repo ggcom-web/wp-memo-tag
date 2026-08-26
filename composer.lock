@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "d8aec95168c122153e5e5073bef8042d",
+    "content-hash": "07220f81ea6240e9e967ce60ac535b97",
     "packages": [
         {
             "name": "brick/math",
@@ -686,7 +686,7 @@
         },
         {
             "name": "gaelgerard/memo-connect",
-            "version": "dev-update/2026-08-25",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "memo-plugins/memo-connect",
@@ -702,7 +702,7 @@
         },
         {
             "name": "gaelgerard/wc-memo-tag",
-            "version": "dev-update/2026-08-25",
+            "version": "dev-main",
             "dist": {
                 "type": "path",
                 "url": "memo-plugins/wc-memo-tag",
@@ -8029,37 +8029,6 @@
                 "source": "https://plugins.svn.wordpress.org/wp-mail-logging"
             },
             "time": "2026-03-23T19:23:21+00:00"
-        },
-        {
-            "name": "wp-plugin/wpforms-lite",
-            "version": "2.0.0.5",
-            "source": {
-                "type": "svn",
-                "url": "https://plugins.svn.wordpress.org/wpforms-lite/",
-                "reference": "tags/2.0.0.5"
-            },
-            "dist": {
-                "type": "zip",
-                "url": "https://downloads.wordpress.org/plugin/wpforms-lite.2.0.0.5.zip"
-            },
-            "require": {
-                "composer/installers": "~1.0|~2.0"
-            },
-            "type": "wordpress-plugin",
-            "notification-url": "https://wp-packages.org/downloads",
-            "authors": [
-                {
-                    "name": "Syed Balkhi"
-                }
-            ],
-            "description": "The best WordPress contact form plugin. Drag & Drop form builder to create beautiful contact forms, payment forms, & other custom forms.",
-            "homepage": "https://wpforms.com",
-            "support": {
-                "changelog": "https://wordpress.org/plugins/wpforms-lite/#developers",
-                "issues": "https://wordpress.org/support/plugin/wpforms-lite",
-                "source": "https://plugins.svn.wordpress.org/wpforms-lite"
-            },
-            "time": "2026-08-18T11:08:02+00:00"
         },
         {
             "name": "wp-theme/twentytwentyfive",
