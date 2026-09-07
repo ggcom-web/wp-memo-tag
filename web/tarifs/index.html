@@ -1,0 +1,355 @@
+<!DOCTYPE html>
+<html lang="fr" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grille Tarifaire - Solution QR Code & NFC</title>
+    <!-- Tailwind CSS via CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            50: '#eff6ff',
+                            100: '#dbeafe',
+                            500: '#3b82f6',
+                            600: '#2563eb',
+                            700: '#1d4ed8',
+                            900: '#1e3a8a',
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+</head>
+<body class="bg-slate-50 text-slate-800 font-sans antialiased">
+
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16">
+        
+        <!-- En-tête -->
+        <div class="text-center max-w-3xl mx-auto">
+            <h2 class="text-base font-semibold text-brand-600 tracking-wide uppercase">Tarification claire & sans surprise</h2>
+            <p class="mt-2 text-4xl font-extrabold text-slate-900 sm:text-5xl">
+                Choisissez le forfait adapté à votre activité
+            </p>
+            <p class="mt-4 text-xl text-slate-600">
+                Gérez vos QR codes et puces NFC dynamique en toute simplicité. Changez de contenu à tout moment.
+            </p>
+
+            <!-- Toggle Mensuel / Annuel -->
+            <div class="mt-10 flex justify-center items-center gap-4">
+                <span id="label-monthly" class="text-base font-semibold text-slate-900">Facturation Mensuelle</span>
+                <label class="relative inline-flex items-center cursor-pointer">
+                    <input type="checkbox" id="billing-toggle" class="sr-only peer" onchange="toggleBilling()">
+                    <div class="w-14 h-7 bg-slate-300 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-0.5 after:left-[2px] after:bg-white after:border-slate-300 after:border after:rounded-full after:h-6 after:w-6 after:transition-all peer-checked:bg-brand-600"></div>
+                </label>
+                <span id="label-yearly" class="text-base font-medium text-slate-500 flex items-center gap-2">
+                    Facturation Annuelle
+                    <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-800">
+                        -20% Réduction
+                    </span>
+                </span>
+            </div>
+        </div>
+
+        <!-- Grille des Offres SaaS -->
+        <div class="mt-12 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 items-stretch">
+
+            <!-- Plan GRATUIT -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Gratuit</h3>
+                    <p class="text-sm text-slate-500 mt-1">Pour tester la plateforme sans engagement.</p>
+                    <div class="mt-6 flex items-baseline">
+                        <span class="text-4xl font-extrabold text-slate-900">0 €</span>
+                    </div>
+                    <ul class="mt-8 space-y-4 text-sm text-slate-600">
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>1 Tag / QR code</strong> actif</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Scans & modifications illimités</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Statistiques de base</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Branding Mémo-Tag</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- BOUTON CLIQUABLE -->
+                <a href="https://votre-site.com/register?plan=free" class="mt-8 block w-full py-3 px-4 rounded-xl text-center font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 transition">
+                    Créer un compte
+                </a>
+            </div>
+
+            <!-- Plan DÉCOUVERTE -->
+            <div class="bg-white rounded-2xl shadow-sm border border-slate-200 p-8 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Découverte</h3>
+                    <p class="text-sm text-slate-500 mt-1">Idéal pour TPE et solopreneurs.</p>
+                    <div class="mt-6 flex items-baseline">
+                        <span class="price-value text-4xl font-extrabold text-slate-900" data-monthly="9 €" data-yearly="90 €">9 €</span>
+                        <span class="price-period text-slate-500 text-sm ml-1">HT / mois</span>
+                    </div>
+                    <ul class="mt-8 space-y-4 text-sm text-slate-600">
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>10 Tags / QR codes</strong> actifs</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Analytics complets</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Page Corporate & Individuelle</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>-5% sur les consommables</span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- BOUTON CLIQUABLE -->
+                <a href="https://votre-site.com/checkout?plan=decouverte" class="mt-8 block w-full py-3 px-4 rounded-xl text-center font-semibold text-brand-600 bg-brand-50 hover:bg-brand-100 transition">
+                    Choisir ce forfait
+                </a>
+            </div>
+
+            <!-- Plan BUSINESS (Mis en avant) -->
+            <div class="bg-white rounded-2xl shadow-xl border-2 border-brand-600 p-8 flex flex-col justify-between relative">
+                <div class="absolute -top-4 left-1/2 -translate-x-1/2 bg-brand-600 text-white text-xs uppercase tracking-widest py-1 px-3 rounded-full font-bold shadow-md">
+                    Plus Populaire
+                </div>
+                <div>
+                    <h3 class="text-xl font-bold text-slate-900">Business</h3>
+                    <p class="text-sm text-slate-500 mt-1">PME, artisans & collectivités.</p>
+                    <div class="mt-6 flex items-baseline">
+                        <span class="price-value text-4xl font-extrabold text-slate-900" data-monthly="39 €" data-yearly="390 €">39 €</span>
+                        <span class="price-period text-slate-500 text-sm ml-1">HT / mois</span>
+                    </div>
+                    <ul class="mt-8 space-y-4 text-sm text-slate-600">
+                        <li class="flex items-center gap-3 font-medium text-slate-900">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>50 Tags actifs</strong> + 5 NFC offerts/an</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>2 comptes utilisateurs</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>Sans marque</strong> (Branding neutre)</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>Analytics avancés + Export CSV</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-500 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>-15% sur les consommables</strong></span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- BOUTON CLIQUABLE -->
+                <a href="https://votre-site.com/checkout?plan=business" class="mt-8 block w-full py-3 px-4 rounded-xl text-center font-semibold text-white bg-brand-600 hover:bg-brand-700 shadow-md transition">
+                    Essai gratuit 14 jours
+                </a>
+            </div>
+
+            <!-- Plan PREMIUM -->
+            <div class="bg-slate-900 text-white rounded-2xl shadow-sm p-8 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-xl font-bold">Premium</h3>
+                    <p class="text-sm text-slate-400 mt-1">Agences, revendeurs & grands comptes.</p>
+                    <div class="mt-6 flex items-baseline">
+                        <span class="price-value text-4xl font-extrabold" data-monthly="99 €" data-yearly="990 €">99 €</span>
+                        <span class="price-period text-slate-400 text-sm ml-1">HT / mois</span>
+                    </div>
+                    <ul class="mt-8 space-y-4 text-sm text-slate-300">
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>Tags & QR codes ILLIMITÉS</strong></span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>10 Tags NFC offerts/an</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>Marque Blanche intégrale (OEM)</strong></span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span>5 accès utilisateurs + sous-comptes</span>
+                        </li>
+                        <li class="flex items-center gap-3">
+                            <svg class="w-5 h-5 text-emerald-400 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span><strong>-30% sur les consommables</strong></span>
+                        </li>
+                    </ul>
+                </div>
+                <!-- BOUTON CLIQUABLE -->
+                <a href="https://votre-site.com/contact-sales" class="mt-8 block w-full py-3 px-4 rounded-xl text-center font-semibold text-slate-900 bg-white hover:bg-slate-100 transition">
+                    Contacter l'équipe
+                </a>
+            </div>
+
+        </div>
+
+        <!-- Section Option Onboarding -->
+        <div class="mt-12 bg-white rounded-2xl border border-slate-200 p-6 sm:p-8 flex flex-col md:flex-row items-center justify-between gap-6">
+            <div>
+                <span class="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 uppercase tracking-wide">Optionnel</span>
+                <h4 class="text-xl font-bold text-slate-900 mt-2">Pack Configuration & Accompagnement Onboarding</h4>
+                <p class="text-slate-600 text-sm mt-1 max-w-2xl">
+                    Laissez notre équipe configurer votre compte, intégrer votre charte graphique sur vos landing pages et vous former grâce à une session vidéo dédiée.
+                </p>
+            </div>
+            <div class="flex items-center gap-4 shrink-0">
+                <span class="text-2xl font-extrabold text-slate-900">49 € <span class="text-sm font-normal text-slate-500">HT (une fois)</span></span>
+                <!-- BOUTON CLIQUABLE -->
+                <a href="https://votre-site.com/checkout?option=onboarding" class="py-2.5 px-5 bg-slate-900 hover:bg-slate-800 text-white rounded-xl font-semibold text-sm transition">
+                    Ajouter au panier
+                </a>
+            </div>
+        </div>
+
+        <!-- Tableau des Consommables -->
+        <div class="mt-20">
+            <div class="text-center max-w-2xl mx-auto mb-10">
+                <h3 class="text-3xl font-extrabold text-slate-900">Supports Physiques & Consommables</h3>
+                <p class="text-slate-600 mt-2 text-sm">
+                    Commandez des puces NFC et QR codes imprimés sur-mesure. Tarifs dégressifs selon la quantité.
+                </p>
+            </div>
+
+            <div class="overflow-x-auto bg-white rounded-2xl border border-slate-200 shadow-sm">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="bg-slate-50 border-b border-slate-200 text-slate-700 text-xs uppercase tracking-wider">
+                            <th class="py-4 px-6 font-semibold">Produit / Support</th>
+                            <th class="py-4 px-6 font-semibold text-center">1 à 9 ex.</th>
+                            <th class="py-4 px-6 font-semibold text-center">10 à 49 ex.</th>
+                            <th class="py-4 px-6 font-semibold text-center">50 à 99 ex.</th>
+                            <th class="py-4 px-6 font-semibold text-center">100 à 490 ex.</th>
+                            <th class="py-4 px-6 font-semibold text-center bg-brand-50/50 text-brand-700">500+ ex.</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-slate-200 text-sm text-slate-700">
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-4 px-6 font-medium text-slate-900">Sticker / Tag QR classique <span class="text-xs text-slate-400 block">(1er offert)</span></td>
+                            <td class="py-4 px-6 text-center">4,00 €</td>
+                            <td class="py-4 px-6 text-center">3,00 €</td>
+                            <td class="py-4 px-6 text-center">2,00 €</td>
+                            <td class="py-4 px-6 text-center">1,00 €</td>
+                            <td class="py-4 px-6 text-center font-bold text-brand-600 bg-brand-50/30">0,80 €</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-4 px-6 font-medium text-slate-900">Carte PVC NFC (Impression 1 face)</td>
+                            <td class="py-4 px-6 text-center">9,00 €</td>
+                            <td class="py-4 px-6 text-center">6,00 €</td>
+                            <td class="py-4 px-6 text-center">5,00 €</td>
+                            <td class="py-4 px-6 text-center">4,00 €</td>
+                            <td class="py-4 px-6 text-center font-bold text-brand-600 bg-brand-50/30">3,00 €</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-4 px-6 font-medium text-slate-900">Carte PVC NFC (2 faces - QR Identique)</td>
+                            <td class="py-4 px-6 text-center">9,50 €</td>
+                            <td class="py-4 px-6 text-center">6,50 €</td>
+                            <td class="py-4 px-6 text-center">5,50 €</td>
+                            <td class="py-4 px-6 text-center">4,50 €</td>
+                            <td class="py-4 px-6 text-center font-bold text-brand-600 bg-brand-50/30">3,50 €</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-4 px-6 font-medium text-slate-900">Carte PVC NFC (2 faces - QR Spécifique)</td>
+                            <td class="py-4 px-6 text-center">10,00 €</td>
+                            <td class="py-4 px-6 text-center">7,00 €</td>
+                            <td class="py-4 px-6 text-center">6,00 €</td>
+                            <td class="py-4 px-6 text-center">5,00 €</td>
+                            <td class="py-4 px-6 text-center font-bold text-brand-600 bg-brand-50/30">4,00 €</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-4 px-6 font-medium text-slate-900">Bracelet NFC résistant</td>
+                            <td class="py-4 px-6 text-center">6,00 €</td>
+                            <td class="py-4 px-6 text-center">5,00 €</td>
+                            <td class="py-4 px-6 text-center">4,00 €</td>
+                            <td class="py-4 px-6 text-center">3,00 €</td>
+                            <td class="py-4 px-6 text-center font-bold text-brand-600 bg-brand-50/30">2,00 €</td>
+                        </tr>
+                        <tr class="hover:bg-slate-50">
+                            <td class="py-4 px-6 font-medium text-slate-900">Porte-clé NFC ultra-résistant</td>
+                            <td class="py-4 px-6 text-center">3,00 €</td>
+                            <td class="py-4 px-6 text-center">2,50 €</td>
+                            <td class="py-4 px-6 text-center">2,00 €</td>
+                            <td class="py-4 px-6 text-center">1,50 €</td>
+                            <td class="py-4 px-6 text-center font-bold text-brand-600 bg-brand-50/30">1,00 €</td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Notes de bas de tableau -->
+            <div class="mt-4 text-xs text-slate-500 flex flex-col sm:flex-row justify-between gap-2">
+                <p>• Frais fixes de calage, impression & BAT : 30 € HT / commande.</p>
+                <p>• Option adresses/redirections multiples : +0,20 € HT / support.</p>
+            </div>
+
+            <!-- BOUTON CLIQUABLE COMMANDE MATERIEL -->
+            <div class="mt-8 text-center relative">
+                <a href="#" class="inline-flex items-center justify-center py-3 px-8 rounded-xl font-semibold text-white bg-slate-900 hover:bg-slate-800 transition">
+                    <div class="absolute -top-4 -translate-x-1/2 bg-emerald-600 text-white text-xs uppercase tracking-widest py-1 px-3 rounded-full font-bold shadow-md">
+                        Bientôt
+                    </div>
+                    Accéder au catalogue de matériel
+                </a>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- Script JavaScript pour basculer Mensuel / Annuel -->
+    <script>
+        function toggleBilling() {
+            const isYearly = document.getElementById('billing-toggle').checked;
+            const priceElements = document.querySelectorAll('.price-value');
+            const periodElements = document.querySelectorAll('.price-period');
+            const labelMonthly = document.getElementById('label-monthly');
+            const labelYearly = document.getElementById('label-yearly');
+
+            priceElements.forEach(el => {
+                if (isYearly) {
+                    el.textContent = el.getAttribute('data-yearly');
+                } else {
+                    el.textContent = el.getAttribute('data-monthly');
+                }
+            });
+
+            periodElements.forEach(el => {
+                el.textContent = isYearly ? 'HT / an' : 'HT / mois';
+            });
+
+            if (isYearly) {
+                labelMonthly.classList.remove('text-slate-900');
+                labelMonthly.classList.add('text-slate-500');
+                labelYearly.classList.remove('text-slate-500');
+                labelYearly.classList.add('text-slate-900');
+            } else {
+                labelMonthly.classList.add('text-slate-900');
+                labelMonthly.classList.remove('text-slate-500');
+                labelYearly.classList.add('text-slate-500');
+                labelYearly.classList.remove('text-slate-900');
+            }
+        }
+    </script>
+</body>
+</html>
