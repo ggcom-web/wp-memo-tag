@@ -1,25 +1,37 @@
 <?php
 /**
  * Redirige tous les visiteurs sans accès Woo Share vers un site externe.
- * Sauf pour les outils de monitoring/CI (GitHub Actions).
+ * Sauf pour :
+ * - La page "tarifs"
+ * - Les outils de monitoring/CI (GitHub Actions / Curl)
+ * - L'environnement de développement
  */
 add_action('template_redirect', function () {
     $destination_externe = 'https://memo-tag.fr/';
 
+    // 1. Ne rien faire si la fonction d'accès n'existe pas
     if (!function_exists('has_woo_share_access')) {
         return;
     }
 
-    // 1. Détection des agents de monitoring ou de CI
+    // 2. Vérifier si on est sur la page "tarifs" (slug, ID ou titre)
+    if (is_page('tarifs')) {
+        return;
+    }
+
+    // 3. Détection de l'environnement de dev (évite une Notice PHP si non définie)
+    $is_dev_env = defined('WP_ENV') && WP_ENV === 'development';
+    if ($is_dev_env) {
+        return;
+    }
+
+    // 4. Détection des agents de monitoring ou de CI
     $user_agent = isset($_SERVER['HTTP_USER_AGENT']) ? $_SERVER['HTTP_USER_AGENT'] : '';
-    
-    // On définit une liste de mots-clés qui ne doivent pas être redirigés
-    // 'GitHub-Hookshot' est souvent utilisé, ou tu peux ajouter 'curl'
     $is_ci_pipeline = (strpos($user_agent, 'GitHub') !== false || strpos($user_agent, 'curl') !== false);
 
-    // 2. Si l'utilisateur n'a PAS l'accès ET que ce n'est pas le pipeline
-    if (!has_woo_share_access() && WP_ENV !== 'development' && !$is_ci_pipeline) {
-        wp_redirect($destination_externe);
+    // 5. Redirection si l'utilisateur n'a pas accès et n'est pas un bot CI
+    if (!has_woo_share_access() && !$is_ci_pipeline) {
+        wp_redirect($destination_externe, 302);
         exit;
     }
 });
