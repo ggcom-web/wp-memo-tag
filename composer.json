@@ -69,7 +69,7 @@
     "wp-plugin/health-check": "*",
     "wp-plugin/heartbeat-control": "*",
     "wp-plugin/litespeed-cache": "^7.9",
-    "wp-plugin/login-armor": "^2.5",
+    "wp-plugin/login-armor": "^2.6",
     "wp-plugin/post-type-switcher": "*",
     "wp-plugin/redirection": "^5.10",
     "wp-plugin/search-exclude": "*",
